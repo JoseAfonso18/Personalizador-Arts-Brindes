@@ -220,6 +220,21 @@ body.viewer .stage { height: clamp(360px, 62svh, 640px); }
 .vorder button { width: 100%; display: flex; justify-content: space-between; gap: 10px; text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 13.5px; }
 .vorder button[aria-current="true"] { border-color: var(--accent); }
 .vorder b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.proj { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); }
+.proj-row { display: flex; gap: 8px; }
+.proj-row .field { flex: 1; min-width: 0; height: 48px; font-size: 16px; background: var(--bg); }
+.proj-row .btn2 { height: 48px; padding: 0 16px; }
+.proj-row .btn2.main { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.proj-status { font-size: 13px; color: var(--muted); }
+.proj details summary { cursor: pointer; font-weight: 700; font-size: 14px; min-height: 40px; display: flex; align-items: center; }
+.proj-list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.proj-list li { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); }
+.proj-list li.cur { border-color: var(--accent); }
+.proj-list .pn { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.proj-list .pn b { font-size: 14px; overflow-wrap: anywhere; }
+.proj-list .pn small { font-size: 12px; color: var(--muted); }
+.proj-list button { height: 38px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--raised); font-weight: 700; font-size: 13px; }
+.proj-list button.del { color: var(--bad); }
 .install { height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 14px; }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
 </style>
@@ -290,6 +305,22 @@ body.viewer .stage { height: clamp(360px, 62svh, 640px); }
   </section>
 
   <section class="panel" aria-label="Opções">
+    <div class="proj">
+      <label class="label" for="projName">Projeto</label>
+      <div class="proj-row">
+        <input class="field" id="projName" type="text" maxlength="60" placeholder="Ex.: SOS Extintores, Pedido da Maria">
+        <button type="button" class="btn2 main" id="projSave">Salvar</button>
+      </div>
+      <div class="proj-row">
+        <button type="button" class="btn2" id="projNew" style="flex:1">Novo projeto</button>
+      </div>
+      <div class="proj-status" id="projStatus" aria-live="polite">Salvamento automático ligado neste aparelho.</div>
+      <details id="projDetails" hidden>
+        <summary id="projSummary">Projetos salvos</summary>
+        <ol class="proj-list" id="projList"></ol>
+      </details>
+    </div>
+
     <div class="group">
       <label class="label" for="line1">Texto</label>
       <input class="field" id="line1" type="text" maxlength="60" value="Maria Eduarda" placeholder="Nome, frase, empresa">
@@ -1179,6 +1210,7 @@ function drawText() {
     chips.appendChild(c2);
   }
 
+  scheduleSave();
   lastSpecs = { lines, font: FONTS[state.font].name, h, lenMm, blockH, d: r * 2, deg, product: PRODUCTS.find((p) => p.id === state.product).label, color: state.color.name, rotary: needRotary, logo: logoInfo, yText, textW: state.textW };
   $('copyOut').hidden = true;
   $('copyLabel').textContent = 'Copiar medidas';
@@ -1291,6 +1323,7 @@ $('clearOrder').addEventListener('click', (e) => {
   order.length = 0; b.dataset.armed = ''; b.textContent = 'Limpar pedido'; setEditing(null);
 });
 function renderOrder() {
+  scheduleSave();
   const box = $('orderBox'), list = $('orderList');
   box.hidden = order.length === 0;
   $('orderCount').textContent = order.length + (order.length === 1 ? ' item' : ' itens');
@@ -1650,13 +1683,114 @@ function loop(now) {
 }
 
 resize();
+/* ---------- salvar projetos (neste aparelho) ---------- */
+const LS_WORK = 'ab_work_v1', LS_PROJ = 'ab_projects_v1';
+let restoring = false, saveTimer = null, currentProject = null;
+const lsGet = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+function maskToStr(m) {
+  const pk = new Uint8Array(Math.ceil(m.bits.length / 8));
+  for (let i = 0; i < m.bits.length; i++) if (m.bits[i]) pk[i >> 3] |= 128 >> (i & 7);
+  return { w: m.w, h: m.h, b: b64url(pk) };
+}
+function strToMask(o) { return unpackMask(unb64url(o.b), 0, o.w, o.h); }
+function serializeWork() {
+  const logos = [], idx = (lg) => { if (!lg) return -1; let i = logos.indexOf(lg); if (i === -1) { i = logos.length; logos.push(lg); } return i; };
+  const pack = (c) => { const o = { ...c, color: { ...c.color } }; o.logo = idx(c.logo); return o; };
+  const data = { cur: pack(snapshot()), order: order.map(pack), editIdx };
+  data.logos = logos.map(maskToStr);
+  return data;
+}
+function deserializeWork(d) {
+  const logos = (d.logos || []).map(strToMask);
+  const un = (c) => ({ ...c, logo: c.logo >= 0 ? logos[c.logo] : null });
+  order.length = 0;
+  (d.order || []).forEach((it) => order.push(un(it)));
+  restoring = true;
+  applyConfig(un(d.cur));
+  restoring = false;
+  setEditing(d.editIdx != null && d.editIdx < order.length ? d.editIdx : null);
+}
+function scheduleSave() {
+  if (restoring || document.body.classList.contains('viewer')) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const ok = lsSet(LS_WORK, { project: currentProject, data: serializeWork() });
+    if (!ok) $('projStatus').textContent = 'Não consegui salvar automático (memória do navegador cheia ou bloqueada).';
+  }, 500);
+}
+function projects() { return lsGet(LS_PROJ) || []; }
+function renderProjects() {
+  const list = projects();
+  $('projDetails').hidden = list.length === 0;
+  $('projSummary').textContent = 'Abrir projeto salvo (' + list.length + ')';
+  const ol = $('projList'); ol.innerHTML = '';
+  list.sort((a, b) => b.t - a.t).forEach((pj) => {
+    const li = document.createElement('li');
+    if (pj.name === currentProject) li.className = 'cur';
+    const n = (pj.data.order || []).length;
+    li.innerHTML = '<span class="pn"><b></b><small></small></span><button type="button" class="op">Abrir</button><button type="button" class="del">Apagar</button>';
+    li.querySelector('b').textContent = pj.name;
+    li.querySelector('small').textContent = (n ? n + (n === 1 ? ' item · ' : ' itens · ') : '') + new Date(pj.t).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    li.querySelector('.op').addEventListener('click', () => {
+      currentProject = pj.name; $('projName').value = pj.name;
+      deserializeWork(pj.data); renderProjects();
+      $('projStatus').textContent = 'Projeto "' + pj.name + '" aberto.';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    li.querySelector('.del').addEventListener('click', (e) => {
+      const b = e.currentTarget;
+      if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Confirmar'; setTimeout(() => { b.dataset.armed = ''; b.textContent = 'Apagar'; }, 3000); return; }
+      lsSet(LS_PROJ, projects().filter((x) => x.name !== pj.name));
+      if (currentProject === pj.name) currentProject = null;
+      renderProjects();
+    });
+    ol.appendChild(li);
+  });
+}
+$('projSave').addEventListener('click', () => {
+  const name = $('projName').value.trim();
+  if (!name) { $('projStatus').textContent = 'Digite um nome para o projeto.'; $('projName').focus(); return; }
+  const list = projects().filter((x) => x.name !== name);
+  list.push({ name, t: Date.now(), data: serializeWork() });
+  if (!lsSet(LS_PROJ, list)) { $('projStatus').textContent = 'Não coube na memória do navegador. Apague projetos antigos e tente de novo.'; return; }
+  currentProject = name; scheduleSave(); renderProjects();
+  $('projStatus').textContent = 'Projeto "' + name + '" salvo às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '.';
+});
+$('projName').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('projSave').click(); });
+$('projNew').addEventListener('click', (e) => {
+  const b = e.currentTarget;
+  if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Confirmar: começar do zero'; setTimeout(() => { b.dataset.armed = ''; b.textContent = 'Novo projeto'; }, 3000); return; }
+  b.dataset.armed = ''; b.textContent = 'Novo projeto';
+  currentProject = null; $('projName').value = '';
+  order.length = 0;
+  applyConfig({ product: 'copo', color: COLORS[0], font: 0, line1: '', line2: '', h: 10, vpos: 50, textW: null, logo: null });
+  setEditing(null); renderProjects();
+  $('projStatus').textContent = 'Projeto novo. Salvamento automático ligado neste aparelho.';
+});
+
 let shared = null;
 if (location.hash.startsWith('#p=')) {
   try { shared = decodeOrder(await readShared(location.hash)); }
   catch (e) { console.warn('Link de prévia inválido', e); }
 }
 if (shared && shared.length) { enterViewer(shared); resize(); showViewerItem(0); }
-else { buildProduct(); setView(0, null, true); }
+else {
+  const saved = lsGet(LS_WORK);
+  let restored = false;
+  if (saved && saved.data && saved.data.cur) {
+    try {
+      currentProject = saved.project || null;
+      $('projName').value = currentProject || '';
+      deserializeWork(saved.data);
+      restored = true;
+      $('projStatus').textContent = currentProject ? 'Continuando o projeto "' + currentProject + '".' : 'Continuando de onde você parou.';
+    } catch (e) { console.warn('Não consegui restaurar', e); }
+  }
+  if (!restored) buildProduct();
+  setView(0, null, true);
+  renderProjects();
+}
 loadFontThenDraw();
 document.fonts.ready.then(drawText);
 requestAnimationFrame(loop);
