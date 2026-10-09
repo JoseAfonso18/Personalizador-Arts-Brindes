@@ -186,6 +186,13 @@ body.viewer .stage .live, body.viewer .panel, body.viewer .quick, body.viewer #i
 body.viewer .layout { grid-template-columns: minmax(0, 1fr); max-width: 720px; }
 body.viewer .stage-wrap { position: static; margin-inline: 0; padding: 0; box-shadow: none; }
 body.viewer .stage { height: clamp(360px, 62svh, 640px); }
+.dims { display: grid; gap: 6px; }
+.dims-head, .dims-row { display: grid; grid-template-columns: 54px repeat(3, minmax(0, 1fr)); gap: 6px; align-items: center; }
+.dims-head span { font-size: 11.5px; font-weight: 700; letter-spacing: 0.4px; color: var(--muted); text-align: center; }
+.dims-row strong { font-size: 13.5px; }
+.dims-row input { width: 100%; min-width: 0; height: 46px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); text-align: center; font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+.dims-row input::placeholder { color: #75757E; font-weight: 600; font-size: 13px; }
+.dims-row input:focus { border-color: var(--accent); outline: none; }
 .install { height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 14px; }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
 </style>
@@ -263,12 +270,6 @@ body.viewer .stage { height: clamp(360px, 62svh, 640px); }
       <div class="logo-box" id="logoBox" hidden>
         <canvas id="logoPreview" width="192" height="192" aria-label="Prévia da logo como gravação"></canvas>
         <div class="logo-ctl">
-          <div class="row">
-            <span>Largura</span>
-            <button type="button" class="mini" id="lwDown" aria-label="Diminuir a logo">−</button>
-            <label class="numf"><input id="lw" type="number" inputmode="decimal" min="5" max="120" step="1" value="40" aria-label="Largura da logo em milímetros">mm</label>
-            <button type="button" class="mini" id="lwUp" aria-label="Aumentar a logo">+</button>
-          </div>
           <div class="sides" id="logoSides" role="group" aria-label="Lado da logo">
             <button type="button" data-a="0" aria-pressed="true">Frente</button>
             <button type="button" data-a="90" aria-pressed="false">Direita</button>
@@ -282,6 +283,30 @@ body.viewer .stage { height: clamp(360px, 62svh, 640px); }
         </div>
       </div>
       <p class="small">A logo vira gravação de uma cor só, como no laser. Funciona melhor PNG com fundo transparente. Se a parte errada ficar gravada, marque Inverter.</p>
+    </div>
+
+    <div class="group">
+      <div class="label">Medidas da gravação <span class="val" style="color:var(--muted);font-weight:500;font-size:13px">em mm</span></div>
+      <div class="dims">
+        <div class="dims-head" aria-hidden="true"><span></span><span>Largura</span><span>Altura</span><span>Centro*</span></div>
+        <div class="dims-row">
+          <strong>Nome</strong>
+          <input id="dTW" type="text" inputmode="decimal" placeholder="auto" aria-label="Largura do nome em mm (vazio = automático)">
+          <input id="dTH" type="text" inputmode="decimal" aria-label="Altura da letra em mm">
+          <input id="dTY" type="text" inputmode="decimal" aria-label="Centro do nome, em mm a partir da base">
+        </div>
+        <div class="dims-row" id="dimLogo" hidden>
+          <strong>Logo</strong>
+          <input id="dLW" type="text" inputmode="decimal" aria-label="Largura da logo em mm">
+          <input id="dLH" type="text" inputmode="decimal" aria-label="Altura da logo em mm">
+          <input id="dLY" type="text" inputmode="decimal" aria-label="Centro da logo, em mm a partir da base">
+        </div>
+      </div>
+      <div class="row">
+        <label class="check"><input type="checkbox" id="tLock"> Nome: manter proporção</label>
+        <label class="check" id="lLockWrap" hidden><input type="checkbox" id="lLock"> Logo: manter proporção</label>
+      </div>
+      <p class="small">*Centro: a quantos mm da base da peça fica o meio da gravação. Largura do nome vazia = tamanho natural da fonte. Sem "manter proporção", cada medida fica exatamente como você digitar.</p>
     </div>
 
     <div class="group">
@@ -391,7 +416,7 @@ const PRODUCTS = [
 ];
 
 const state = { product: 'copo', color: COLORS[0], font: 0, line1: 'Maria Eduarda', line2: '', h: 10, vpos: 50, spin: false,
-  logo: null, logoW: 40, logoV: 50, logoA: 0, logoInv: false, target: 'text' };
+  logo: null, logoW: 40, logoH: 25, logoV: 50, logoA: 0, logoInv: false, target: 'text', textW: null, tLock: false, lLock: false };
 // Número do WhatsApp da loja para o botão de aprovação do cliente (só dígitos, com DDI e DDD). Vazio = botão escondido.
 const WHATSAPP = '';
 
@@ -483,7 +508,7 @@ function setV(v) {
   $('vSlider').value = state.vpos;
   drawText();
 }
-$('qSize').addEventListener('change', (e) => { const v = parseFloat(String(e.target.value).replace(',', '.')); if (!isNaN(v)) setH(v); e.target.value = String(state.h); });
+$('qSize').addEventListener('change', (e) => { const v = num(e.target.value); if (!isNaN(v)) { if (isLogo()) setLW(v); else setH(v); } });
 $('qSize').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
 const isLogo = () => state.target === 'logo' && state.logo;
 holdRepeat($('qSizeDown'), () => (isLogo() ? setLW(state.logoW - 1) : setH(state.h - 0.5)));
@@ -505,17 +530,56 @@ function refreshTarget() {
   $('qSize').setAttribute('aria-label', logo ? 'Largura da logo em milímetros' : 'Altura da letra em milímetros');
 }
 /* ---------- logo ---------- */
+const maxLogoW = () => (band ? Math.floor(2 * Math.PI * band.rAt(band.y0 + band.bandH / 2) - (band.handleGap || 0)) : 200);
+function clampLogo() {
+  state.logoW = Math.max(3, Math.min(state.logoW, maxLogoW()));
+  if (band) state.logoH = Math.max(3, Math.min(state.logoH, band.bandH));
+}
+// botões rápidos: aumenta ou diminui mantendo o formato atual
 function setLW(v) {
-  const maxW = band ? Math.floor(2 * Math.PI * band.rAt(band.y0 + band.bandH / 2) - (band.handleGap || 0)) : 120;
-  const maxByH = state.logo && band ? Math.floor(band.bandH * state.logo.w / state.logo.h) : 120;
-  state.logoW = Math.max(5, Math.min(Math.round(v), maxW, maxByH));
-  $('lw').value = String(state.logoW);
+  const k = Math.max(3, v) / state.logoW;
+  state.logoW = Math.round(state.logoW * k * 10) / 10;
+  state.logoH = Math.round(state.logoH * k * 10) / 10;
+  clampLogo();
   drawText();
 }
-function setLV(v) { state.logoV = Math.min(90, Math.max(10, Math.round(v))); drawText(); }
-$('lw').addEventListener('change', (e) => { const v = parseFloat(String(e.target.value).replace(',', '.')); if (!isNaN(v)) setLW(v); e.target.value = String(state.logoW); });
-holdRepeat($('lwDown'), () => setLW(state.logoW - 1));
-holdRepeat($('lwUp'), () => setLW(state.logoW + 1));
+function setLV(v) { state.logoV = Math.min(98, Math.max(2, v)); drawText(); }
+function num(v) { const n = parseFloat(String(v).trim().replace(',', '.')); return isNaN(n) ? NaN : n; }
+const pctFromY = (y) => (band ? Math.min(98, Math.max(2, (y - band.y0) / band.bandH * 100)) : 50);
+let lastNaturalW = 0, lastTextW = 0;
+function onDim(id, fn) {
+  const el = $(id);
+  el.addEventListener('change', () => { fn(num(el.value), el.value.trim() === ''); el.blur(); drawText(); });
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') el.blur(); });
+  el.addEventListener('focus', () => el.select());
+}
+onDim('dTW', (v, empty) => {
+  if (empty) { state.textW = null; return; }
+  if (isNaN(v) || v <= 0) return;
+  v = Math.min(v, maxLogoW());
+  if (state.tLock && lastTextW) { const k = v / lastTextW; state.h = Math.max(1, state.h * k); if (state.textW) state.textW = v; }
+  else state.textW = v;
+});
+onDim('dTH', (v) => {
+  if (isNaN(v) || v <= 0) return;
+  v = Math.min(v, band ? band.bandH : 40);
+  if (state.tLock && state.textW) state.textW = state.textW * v / state.h;
+  state.h = v; $('hSlider').value = Math.min(v, Number($('hSlider').max));
+});
+onDim('dTY', (v) => { if (!isNaN(v)) { state.vpos = pctFromY(v); $('vSlider').value = state.vpos; } });
+onDim('dLW', (v) => {
+  if (isNaN(v) || v <= 0) return;
+  if (state.lLock) state.logoH = state.logoH * v / state.logoW;
+  state.logoW = v; clampLogo();
+});
+onDim('dLH', (v) => {
+  if (isNaN(v) || v <= 0) return;
+  if (state.lLock) state.logoW = state.logoW * v / state.logoH;
+  state.logoH = v; clampLogo();
+});
+onDim('dLY', (v) => { if (!isNaN(v)) state.logoV = pctFromY(v); });
+$('tLock').addEventListener('change', (e) => { state.tLock = e.target.checked; });
+$('lLock').addEventListener('change', (e) => { state.lLock = e.target.checked; });
 $('logoSides').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
   state.logoA = Number(b.dataset.a);
   pressGroup($('logoSides'), b);
@@ -525,7 +589,7 @@ $('logoSides').querySelectorAll('button').forEach((b) => b.addEventListener('cli
 $('logoInvert').addEventListener('change', (e) => { state.logoInv = e.target.checked; rebuildLogoCanvas(); drawText(); });
 $('logoRemove').addEventListener('click', () => {
   state.logo = null; state.target = 'text'; logoCanvas = null;
-  $('logoBox').hidden = true; $('logoFile').value = ''; $('uploadTxt').textContent = 'Importar logo (PNG, JPG ou SVG)';
+  $('logoBox').hidden = true; $('dimLogo').hidden = true; $('lLockWrap').hidden = true; $('logoFile').value = ''; $('uploadTxt').textContent = 'Importar logo (PNG, JPG ou SVG)';
   refreshTarget(); drawText();
 });
 $('logoFile').addEventListener('change', async (e) => {
@@ -540,12 +604,15 @@ $('logoFile').addEventListener('change', async (e) => {
     $('logoBox').hidden = false;
     $('uploadTxt').textContent = 'Trocar logo';
     state.target = 'logo';
+    state.logoH = Math.round(state.logoW * state.logo.h / state.logo.w * 10) / 10;
+    clampLogo();
+    $('dimLogo').hidden = false; $('lLockWrap').hidden = false;
     refreshTarget();
-    setLW(state.logoW);
+    drawText();
     // posiciona a logo acima do texto, sem sobrepor
     const hasText = [state.line1, state.line2].some((t) => t.trim());
     if (band && hasText) {
-      const lh = state.logoW * state.logo.h / state.logo.w;
+      const lh = state.logoH;
       const nLines = [state.line1, state.line2].filter((t) => t.trim()).length;
       const textH = state.h + (nLines - 1) * state.h * 1.25;
       const total = lh + 6 + textH;
@@ -908,6 +975,7 @@ function buildProduct() {
   setView(-18, dist, true);
   $('hSlider').max = Math.min(40, Math.floor(bandH));
   if (state.h > bandH) { state.h = Math.floor(bandH); $('hSlider').value = state.h; }
+  if (state.logo) clampLogo();
   applyColor();
   drawText();
 }
@@ -966,12 +1034,16 @@ function drawText() {
 
   let lenMm = 0;
   lines.forEach((l) => { lenMm = Math.max(lenMm, ctx.measureText(l).width / PXY); });
+  lastNaturalW = lenMm;
+  const sxText = state.textW && lenMm ? state.textW / lenMm : 1;
+  if (state.textW && lenMm) lenMm = state.textW;
+  lastTextW = lenMm;
 
   const cy = H - (state.vpos / 100) * H;
   [-W, 0, W].forEach((shift) => {
     ctx.save();
     ctx.translate(W / 2 + shift, cy);
-    ctx.scale(pxX / PXY, 1);
+    ctx.scale(pxX / PXY * sxText, 1);
     lines.forEach((l, i) => {
       const y = (i - (lines.length - 1) / 2) * lineGap * PXY;
       ctx.fillText(l, 0, y);
@@ -983,7 +1055,7 @@ function drawText() {
     const yL = band.y0 + band.bandH * (state.logoV / 100);
     const rL = band.rAt(yL);
     const pxXL = W / (2 * Math.PI * rL);
-    const lwMm = state.logoW, lhMm = state.logoW * state.logo.h / state.logo.w;
+    const lwMm = state.logoW, lhMm = state.logoH;
     const wPx = lwMm * pxXL, hPx = lhMm * PXY;
     const cxL = W / 2 + (state.logoA / 360) * W;
     const cyL = H - (state.logoV / 100) * H;
@@ -1004,7 +1076,13 @@ function drawText() {
 
   $('hOut').textContent = fmt(h) + ' mm';
   const tl = isLogo();
-  if (document.activeElement !== $('qSize')) $('qSize').value = String(tl ? state.logoW : h);
+  const setF = (id, v) => { const el = $(id); if (document.activeElement !== el) el.value = v; };
+  setF('dTW', state.textW ? fmt(state.textW) : '');
+  $('dTW').placeholder = lines.length ? 'auto ' + fmt(lastNaturalW) : 'auto';
+  setF('dTH', fmt(h));
+  setF('dTY', fmt(yText));
+  if (logoInfo) { setF('dLW', fmt(logoInfo.w)); setF('dLH', fmt(logoInfo.h)); setF('dLY', fmt(logoInfo.fromBase)); }
+  if (document.activeElement !== $('qSize')) $('qSize').value = String(tl ? Math.round(state.logoW * 10) / 10 : h);
   $('qSize').max = tl ? '120' : $('hSlider').max;
   $('liveTxt').textContent = tl && logoInfo
     ? 'Logo ' + fmt(logoInfo.w) + ' × ' + fmt(logoInfo.h) + ' mm'
@@ -1062,7 +1140,7 @@ $('copyBtn').addEventListener('click', () => {
     'Produto: ' + s.product + ' (' + s.color + ')',
     'Texto: ' + s.lines.join(' / '),
     'Fonte: ' + s.font,
-    'Altura da letra: ' + fmt(s.h) + ' mm',
+    'Altura da letra: ' + fmt(s.h) + ' mm' + (state.textW ? ' · largura fixada em ' + fmt(state.textW) + ' mm' : ''),
     'Comprimento: ' + fmt(s.lenMm) + ' mm · Altura do bloco: ' + fmt(s.blockH) + ' mm',
     'Diâmetro (rotativo): ' + fmt(s.d) + ' mm · ' + Math.round(s.deg) + '° da volta' + (s.rotary ? ' · usar rotativo' : ''),
     s.logo ? 'Logo: ' + fmt(s.logo.w) + ' × ' + fmt(s.logo.h) + ' mm · ' + s.logo.side + ' · centro a ' + fmt(s.logo.fromBase) + ' mm da base · Ø ' + fmt(s.logo.d) + ' mm' : ''
@@ -1108,14 +1186,14 @@ function shrinkMask(m, maxSide) {
 }
 async function buildShareUrl() {
   const c = state.color;
-  const meta = { p: state.product, c: { n: c.name, h: c.hex, i: c.inox ? 1 : 0 }, f: state.font, t: [state.line1, state.line2], h: state.h, v: state.vpos };
+  const meta = { p: state.product, c: { n: c.name, h: c.hex, i: c.inox ? 1 : 0 }, f: state.font, t: [state.line1, state.line2], h: state.h, v: state.vpos, tw: state.textW };
   let packed = new Uint8Array(0);
   if (state.logo) {
     const src = state.logoInv ? { w: state.logo.w, h: state.logo.h, bits: state.logo.bits.map((b) => b ? 0 : 1) } : state.logo;
     const m = shrinkMask(src, 360);
     packed = new Uint8Array(Math.ceil(m.bits.length / 8));
     for (let i = 0; i < m.bits.length; i++) if (m.bits[i]) packed[i >> 3] |= 128 >> (i & 7);
-    meta.L = { w: m.w, h: m.h, lw: state.logoW, lv: state.logoV, la: state.logoA };
+    meta.L = { w: m.w, h: m.h, lw: state.logoW, lh: state.logoH, lv: state.logoV, la: state.logoA };
   }
   const js = new TextEncoder().encode(JSON.stringify(meta));
   const all = new Uint8Array(4 + js.length + packed.length);
@@ -1139,13 +1217,13 @@ function applyShared({ meta, packed }) {
   state.color = known || { name: meta.c.n, hex: meta.c.h, inox: !!meta.c.i };
   if (FONTS[meta.f]) state.font = meta.f;
   state.line1 = meta.t[0] || ''; state.line2 = meta.t[1] || '';
-  state.h = meta.h; state.vpos = meta.v;
+  state.h = meta.h; state.vpos = meta.v; state.textW = meta.tw || null;
   $('line1').value = state.line1; $('line2').value = state.line2;
   if (meta.L) {
     const { w, h } = meta.L, bits = new Uint8Array(w * h);
     for (let i = 0; i < bits.length; i++) bits[i] = (packed[i >> 3] >> (7 - (i & 7))) & 1;
     state.logo = { w, h, bits }; state.logoInv = false;
-    state.logoW = meta.L.lw; state.logoV = meta.L.lv; state.logoA = meta.L.la;
+    state.logoW = meta.L.lw; state.logoH = meta.L.lh || meta.L.lw * h / w; state.logoV = meta.L.lv; state.logoA = meta.L.la;
     rebuildLogoCanvas();
   }
 }
