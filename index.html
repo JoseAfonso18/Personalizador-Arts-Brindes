@@ -145,6 +145,47 @@ input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--ac
 .install-help ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; color: var(--fg2); font-size: 14px; line-height: 1.45; }
 .install-help b { color: var(--fg); }
 .install-close { align-self: flex-start; height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--raised); font-weight: 700; }
+.quick .target { width: auto; padding: 0 10px; font-size: 13px; background: var(--accent); color: var(--accent-ink); }
+@media (max-width: 480px) {
+  .stage .quick { left: 6px; right: 6px; bottom: 6px; gap: 6px; }
+  .quick .grp { gap: 2px; padding: 3px; }
+  .quick button { width: 40px; height: 42px; }
+  .quick .target { width: auto; padding: 0 8px; }
+  .quick .lbl { display: none; }
+  .quick .qsize input { width: 38px; }
+}
+.upload { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; border-radius: var(--r-md); border: 1.5px dashed var(--line); background: var(--surface); font-weight: 700; cursor: pointer; }
+.upload:hover, .upload:focus-within { border-color: var(--accent); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.logo-box { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 12px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line); }
+.logo-box canvas { width: 96px; height: 96px; border-radius: 10px; background: #2a2b30; image-rendering: auto; }
+.logo-ctl { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.row > span { font-size: 13px; color: var(--muted); font-weight: 600; }
+.mini { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--raised); font-weight: 800; font-size: 16px; }
+.numf { display: flex; align-items: center; gap: 4px; font-weight: 700; }
+.numf input { width: 56px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); text-align: center; font-variant-numeric: tabular-nums; }
+.sides { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.sides button { height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--raised); font-size: 12.5px; font-weight: 600; color: var(--fg2); }
+.sides button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--fg); }
+.check { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; min-height: 40px; }
+.check input { width: 20px; height: 20px; accent-color: var(--accent); }
+.linkbtn { border: none; background: none; color: var(--bad); font-weight: 700; font-size: 14px; min-height: 40px; padding: 0 4px; }
+.small { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; }
+.share { padding: 16px; border-radius: var(--r-lg); border: 1px solid var(--accent); background: var(--surface); display: flex; flex-direction: column; gap: 12px; }
+.share p { margin: 0; font-size: 14px; color: var(--fg2); line-height: 1.45; }
+.btn2 { height: 50px; border-radius: 14px; border: 1px solid var(--line); background: var(--raised); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.share-msg { font-size: 13.5px; font-weight: 600; color: var(--ok); min-height: 1em; }
+.viewer-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); }
+.viewer-card dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 14px; font-size: 14px; }
+.viewer-card dt { color: var(--muted); font-weight: 600; }
+.viewer-card dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+.wa { height: 52px; border-radius: 14px; background: #25D366; color: #0B1F12; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+body.viewer .stage .live, body.viewer .panel, body.viewer .quick, body.viewer #installBtn, body.viewer #installHelp, body.viewer #hint { display: none !important; }
+body.viewer .layout { grid-template-columns: minmax(0, 1fr); max-width: 720px; }
+body.viewer .stage-wrap { position: static; margin-inline: 0; padding: 0; box-shadow: none; }
+body.viewer .stage { height: clamp(360px, 62svh, 640px); }
 .install { height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 14px; }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
 </style>
@@ -175,7 +216,8 @@ input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--ac
       </div>
       <div class="live" aria-live="polite"><i id="liveDot"></i><span id="liveTxt">–</span></div>
       <div class="quick">
-        <div class="grp" role="group" aria-label="Tamanho da letra">
+        <div class="grp" role="group" aria-label="Tamanho">
+          <button type="button" id="qTarget" class="target" hidden aria-label="Trocar entre ajustar o texto e a logo">Texto</button>
           <button type="button" id="qSizeDown" aria-label="Diminuir a letra">A−</button>
           <label class="qsize"><input id="qSize" type="number" inputmode="decimal" min="3" max="40" step="0.5" value="10" aria-label="Altura da letra em milímetros"><span>mm</span></label>
           <button type="button" id="qSizeUp" aria-label="Aumentar a letra">A+</button>
@@ -193,6 +235,14 @@ input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--ac
       <button type="button" id="vBack" aria-pressed="false">Costas</button>
       <button type="button" id="vSpin" aria-pressed="false">Girar</button>
     </div>
+    <div class="viewer-card" id="viewerCard" hidden>
+      <dl id="viewerList"></dl>
+      <p class="small">Prévia ilustrativa feita pela Art's Brindes. Tamanho e posição são conferidos antes da gravação.</p>
+      <a class="wa" id="waApprove" href="#" target="_blank" rel="noopener" hidden>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.8-1.2.2-.6.2-1.1.1-1.2l-.4-.2z"/></svg>
+        Aprovar pelo WhatsApp
+      </a>
+    </div>
   </section>
 
   <section class="panel" aria-label="Opções">
@@ -201,6 +251,37 @@ input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--ac
       <input class="field" id="line1" type="text" maxlength="60" value="Maria Eduarda" placeholder="Nome, frase, empresa">
       <label class="label" for="line2">Segunda linha <span class="val" style="color:var(--muted);font-weight:500;font-size:13px">opcional</span></label>
       <input class="field" id="line2" type="text" maxlength="60" value="" placeholder="Ex.: data, cargo, 15 anos">
+    </div>
+
+    <div class="group">
+      <div class="label">Logo ou desenho <span class="val" style="color:var(--muted);font-weight:500;font-size:13px">opcional</span></div>
+      <label class="upload" id="uploadLbl">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        <span id="uploadTxt">Importar logo (PNG, JPG ou SVG)</span>
+        <input type="file" id="logoFile" class="sr-only" accept="image/png,image/jpeg,image/svg+xml,image/webp">
+      </label>
+      <div class="logo-box" id="logoBox" hidden>
+        <canvas id="logoPreview" width="192" height="192" aria-label="Prévia da logo como gravação"></canvas>
+        <div class="logo-ctl">
+          <div class="row">
+            <span>Largura</span>
+            <button type="button" class="mini" id="lwDown" aria-label="Diminuir a logo">−</button>
+            <label class="numf"><input id="lw" type="number" inputmode="decimal" min="5" max="120" step="1" value="40" aria-label="Largura da logo em milímetros">mm</label>
+            <button type="button" class="mini" id="lwUp" aria-label="Aumentar a logo">+</button>
+          </div>
+          <div class="sides" id="logoSides" role="group" aria-label="Lado da logo">
+            <button type="button" data-a="0" aria-pressed="true">Frente</button>
+            <button type="button" data-a="90" aria-pressed="false">Direita</button>
+            <button type="button" data-a="180" aria-pressed="false">Costas</button>
+            <button type="button" data-a="-90" aria-pressed="false">Esquerda</button>
+          </div>
+          <div class="row" style="justify-content:space-between">
+            <label class="check"><input type="checkbox" id="logoInvert"> Inverter</label>
+            <button type="button" class="linkbtn" id="logoRemove">Remover logo</button>
+          </div>
+        </div>
+      </div>
+      <p class="small">A logo vira gravação de uma cor só, como no laser. Funciona melhor PNG com fundo transparente. Se a parte errada ficar gravada, marque Inverter.</p>
     </div>
 
     <div class="group">
@@ -244,6 +325,21 @@ input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--ac
         <span id="copyLabel">Copiar medidas</span>
       </button>
       <textarea class="copy-out" id="copyOut" rows="5" readonly hidden aria-label="Medidas para copiar"></textarea>
+    </div>
+
+    <div class="share">
+      <div class="label">Enviar para o cliente</div>
+      <p>Gera um link com o produto, a cor, o texto e a logo. O cliente abre no celular, gira a peça e vê como vai ficar, mas não consegue mudar nada.</p>
+      <button type="button" class="copy" id="shareBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+        <span>Enviar link da prévia</span>
+      </button>
+      <div class="btns">
+        <button type="button" class="btn2" id="copyLinkBtn">Copiar link</button>
+        <button type="button" class="btn2" id="imgBtn">Salvar imagem</button>
+      </div>
+      <div class="share-msg" id="shareMsg" aria-live="polite"></div>
+      <textarea class="copy-out" id="shareOut" rows="3" readonly hidden aria-label="Link da prévia"></textarea>
     </div>
 
     <p class="foot">As medidas dos produtos são de exemplo e precisam ser trocadas pelas reais. As fontes também são de exemplo: depois entram as da sua máquina. A altura da letra é o tamanho da fonte, o mesmo valor do campo de altura no EzCad.</p>
@@ -294,7 +390,10 @@ const PRODUCTS = [
   { id: 'slim', label: 'Garrafa 500 ml', sub: 'Ø 70 mm' }
 ];
 
-const state = { product: 'copo', color: COLORS[0], font: 0, line1: 'Maria Eduarda', line2: '', h: 10, vpos: 50, spin: false };
+const state = { product: 'copo', color: COLORS[0], font: 0, line1: 'Maria Eduarda', line2: '', h: 10, vpos: 50, spin: false,
+  logo: null, logoW: 40, logoV: 50, logoA: 0, logoInv: false, target: 'text' };
+// Número do WhatsApp da loja para o botão de aprovação do cliente (só dígitos, com DDI e DDD). Vazio = botão escondido.
+const WHATSAPP = '';
 
 /* ---------- UI ---------- */
 const $ = (id) => document.getElementById(id);
@@ -386,10 +485,146 @@ function setV(v) {
 }
 $('qSize').addEventListener('change', (e) => { const v = parseFloat(String(e.target.value).replace(',', '.')); if (!isNaN(v)) setH(v); e.target.value = String(state.h); });
 $('qSize').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
-holdRepeat($('qSizeDown'), () => setH(state.h - 0.5));
-holdRepeat($('qSizeUp'), () => setH(state.h + 0.5));
-holdRepeat($('qDown'), () => setV(state.vpos - 1.5));
-holdRepeat($('qUp'), () => setV(state.vpos + 1.5));
+const isLogo = () => state.target === 'logo' && state.logo;
+holdRepeat($('qSizeDown'), () => (isLogo() ? setLW(state.logoW - 1) : setH(state.h - 0.5)));
+holdRepeat($('qSizeUp'), () => (isLogo() ? setLW(state.logoW + 1) : setH(state.h + 0.5)));
+holdRepeat($('qDown'), () => (isLogo() ? setLV(state.logoV - 1.5) : setV(state.vpos - 1.5)));
+holdRepeat($('qUp'), () => (isLogo() ? setLV(state.logoV + 1.5) : setV(state.vpos + 1.5)));
+$('qTarget').addEventListener('click', () => {
+  state.target = state.target === 'logo' ? 'text' : 'logo';
+  refreshTarget();
+  drawText();
+});
+function refreshTarget() {
+  const logo = isLogo();
+  $('qTarget').hidden = !state.logo;
+  $('qTarget').textContent = logo ? 'Logo' : 'Texto';
+  $('qSizeDown').textContent = logo ? '−' : 'A−';
+  $('qSizeUp').textContent = logo ? '+' : 'A+';
+  $('qSize').step = logo ? '1' : '0.5';
+  $('qSize').setAttribute('aria-label', logo ? 'Largura da logo em milímetros' : 'Altura da letra em milímetros');
+}
+/* ---------- logo ---------- */
+function setLW(v) {
+  const maxW = band ? Math.floor(2 * Math.PI * band.rAt(band.y0 + band.bandH / 2) - (band.handleGap || 0)) : 120;
+  const maxByH = state.logo && band ? Math.floor(band.bandH * state.logo.w / state.logo.h) : 120;
+  state.logoW = Math.max(5, Math.min(Math.round(v), maxW, maxByH));
+  $('lw').value = String(state.logoW);
+  drawText();
+}
+function setLV(v) { state.logoV = Math.min(90, Math.max(10, Math.round(v))); drawText(); }
+$('lw').addEventListener('change', (e) => { const v = parseFloat(String(e.target.value).replace(',', '.')); if (!isNaN(v)) setLW(v); e.target.value = String(state.logoW); });
+holdRepeat($('lwDown'), () => setLW(state.logoW - 1));
+holdRepeat($('lwUp'), () => setLW(state.logoW + 1));
+$('logoSides').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+  state.logoA = Number(b.dataset.a);
+  pressGroup($('logoSides'), b);
+  drawText();
+  setView(state.logoA === -90 ? -90 : state.logoA);
+}));
+$('logoInvert').addEventListener('change', (e) => { state.logoInv = e.target.checked; rebuildLogoCanvas(); drawText(); });
+$('logoRemove').addEventListener('click', () => {
+  state.logo = null; state.target = 'text'; logoCanvas = null;
+  $('logoBox').hidden = true; $('logoFile').value = ''; $('uploadTxt').textContent = 'Importar logo (PNG, JPG ou SVG)';
+  refreshTarget(); drawText();
+});
+$('logoFile').addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  $('uploadTxt').textContent = 'Lendo ' + file.name + '…';
+  try {
+    const img = await fileToImage(file);
+    state.logo = maskFromImage(img);
+    state.logoInv = false; $('logoInvert').checked = false;
+    rebuildLogoCanvas();
+    $('logoBox').hidden = false;
+    $('uploadTxt').textContent = 'Trocar logo';
+    state.target = 'logo';
+    refreshTarget();
+    setLW(state.logoW);
+    // posiciona a logo acima do texto, sem sobrepor
+    const hasText = [state.line1, state.line2].some((t) => t.trim());
+    if (band && hasText) {
+      const lh = state.logoW * state.logo.h / state.logo.w;
+      const nLines = [state.line1, state.line2].filter((t) => t.trim()).length;
+      const textH = state.h + (nLines - 1) * state.h * 1.25;
+      const total = lh + 6 + textH;
+      const mid = band.bandH / 2;
+      const bottomText = Math.max(4, mid - total / 2);
+      state.vpos = Math.min(90, Math.max(10, (bottomText + textH / 2) / band.bandH * 100));
+      state.logoV = Math.min(90, Math.max(10, (bottomText + textH + 6 + lh / 2) / band.bandH * 100));
+      $('vSlider').value = state.vpos;
+      drawText();
+    }
+  } catch (err) {
+    $('uploadTxt').textContent = 'Não consegui abrir esse arquivo. Tente PNG ou JPG.';
+  }
+});
+function fileToImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { resolve(img); setTimeout(() => URL.revokeObjectURL(url), 1000); };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+// Transforma a imagem em máscara de 1 bit (gravado / não gravado), recortada no desenho.
+function maskFromImage(img) {
+  let w = img.naturalWidth || 600, h = img.naturalHeight || 600;
+  const k = Math.min(1, 700 / Math.max(w, h));
+  w = Math.max(1, Math.round(w * k)); h = Math.max(1, Math.round(h * k));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  x.drawImage(img, 0, 0, w, h);
+  const d = x.getImageData(0, 0, w, h).data;
+  let transp = 0;
+  for (let i = 3; i < d.length; i += 4) if (d[i] < 200) transp++;
+  const useAlpha = transp > w * h * 0.02;
+  const bits = new Uint8Array(w * h);
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) for (let xx = 0; xx < w; xx++) {
+    const i = (y * w + xx) * 4;
+    const lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    const on = useAlpha ? d[i + 3] > 128 : (d[i + 3] > 128 && lum < 140);
+    if (on) { bits[y * w + xx] = 1; if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  if (x1 < 0) return { w, h, bits };
+  const tw = x1 - x0 + 1, th = y1 - y0 + 1, tb = new Uint8Array(tw * th);
+  for (let y = 0; y < th; y++) tb.set(bits.subarray((y + y0) * w + x0, (y + y0) * w + x0 + tw), y * tw);
+  return { w: tw, h: th, bits: tb };
+}
+let logoCanvas = null;
+let logoTint = { color: '', canvas: null };
+function rebuildLogoCanvas() {
+  logoTint.color = '';
+  if (!state.logo) { logoCanvas = null; return; }
+  const { w, h, bits } = state.logo;
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  const im = x.createImageData(w, h);
+  for (let i = 0; i < bits.length; i++) {
+    const on = state.logoInv ? !bits[i] : bits[i];
+    if (on) { im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = 255; im.data[i * 4 + 3] = 255; }
+  }
+  x.putImageData(im, 0, 0);
+  logoCanvas = c;
+  // prévia no painel
+  const pv = $('logoPreview'), px = pv.getContext('2d');
+  px.clearRect(0, 0, pv.width, pv.height);
+  const s = Math.min((pv.width - 20) / w, (pv.height - 20) / h);
+  px.drawImage(tinted('#E6E8EC'), (pv.width - w * s) / 2, (pv.height - h * s) / 2, w * s, h * s);
+}
+function tinted(color) {
+  if (logoTint.color === color && logoTint.canvas) return logoTint.canvas;
+  const c = document.createElement('canvas'); c.width = logoCanvas.width; c.height = logoCanvas.height;
+  const x = c.getContext('2d');
+  x.drawImage(logoCanvas, 0, 0);
+  x.globalCompositeOperation = 'source-in';
+  x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
+  logoTint = { color, canvas: c };
+  return c;
+}
 
 /* ---------- 3D ---------- */
 const stage = $('stage');
@@ -743,6 +978,20 @@ function drawText() {
     });
     ctx.restore();
   });
+  let logoInfo = null;
+  if (state.logo && logoCanvas) {
+    const yL = band.y0 + band.bandH * (state.logoV / 100);
+    const rL = band.rAt(yL);
+    const pxXL = W / (2 * Math.PI * rL);
+    const lwMm = state.logoW, lhMm = state.logoW * state.logo.h / state.logo.w;
+    const wPx = lwMm * pxXL, hPx = lhMm * PXY;
+    const cxL = W / 2 + (state.logoA / 360) * W;
+    const cyL = H - (state.logoV / 100) * H;
+    const tc = tinted(ctx.fillStyle);
+    ctx.imageSmoothingEnabled = true;
+    [-W, 0, W].forEach((shift) => ctx.drawImage(tc, cxL - wPx / 2 + shift, cyL - hPx / 2, wPx, hPx));
+    logoInfo = { w: lwMm, h: lhMm, d: rL * 2, side: { 0: 'frente', 90: 'direita', 180: 'costas', '-90': 'esquerda' }[state.logoA], fromBase: yL };
+  }
   engraveTex.needsUpdate = true;
 
   // medidas
@@ -754,9 +1003,12 @@ function drawText() {
   const needRotary = lenMm > flatZone;
 
   $('hOut').textContent = fmt(h) + ' mm';
-  if (document.activeElement !== $('qSize')) $('qSize').value = String(h);
-  $('qSize').max = $('hSlider').max;
-  $('liveTxt').textContent = lines.length ? fmt(lenMm) + ' × ' + fmt(blockH) + ' mm' : 'sem texto';
+  const tl = isLogo();
+  if (document.activeElement !== $('qSize')) $('qSize').value = String(tl ? state.logoW : h);
+  $('qSize').max = tl ? '120' : $('hSlider').max;
+  $('liveTxt').textContent = tl && logoInfo
+    ? 'Logo ' + fmt(logoInfo.w) + ' × ' + fmt(logoInfo.h) + ' mm'
+    : (lines.length ? fmt(lenMm) + ' × ' + fmt(blockH) + ' mm' : 'sem texto');
   $('vOut').textContent = state.vpos < 40 ? 'mais embaixo' : state.vpos > 60 ? 'mais em cima' : 'meio';
   $('sLen').textContent = lines.length ? fmt(lenMm) + ' mm' : '–';
   $('sH').textContent = lines.length ? fmt(blockH) + ' mm' : '–';
@@ -796,7 +1048,7 @@ function drawText() {
     chips.appendChild(c2);
   }
 
-  lastSpecs = { lines, font: FONTS[state.font].name, h, lenMm, blockH, d: r * 2, deg, product: PRODUCTS.find((p) => p.id === state.product).label, color: state.color.name, rotary: needRotary };
+  lastSpecs = { lines, font: FONTS[state.font].name, h, lenMm, blockH, d: r * 2, deg, product: PRODUCTS.find((p) => p.id === state.product).label, color: state.color.name, rotary: needRotary, logo: logoInfo };
   $('copyOut').hidden = true;
   $('copyLabel').textContent = 'Copiar medidas';
 }
@@ -804,7 +1056,7 @@ function fmt(n) { return (Math.round(n * 10) / 10).toLocaleString('pt-BR'); }
 
 /* copiar */
 $('copyBtn').addEventListener('click', () => {
-  if (!lastSpecs || !lastSpecs.lines.length) return;
+  if (!lastSpecs || (!lastSpecs.lines.length && !lastSpecs.logo)) return;
   const s = lastSpecs;
   const txt = [
     'Produto: ' + s.product + ' (' + s.color + ')',
@@ -812,14 +1064,160 @@ $('copyBtn').addEventListener('click', () => {
     'Fonte: ' + s.font,
     'Altura da letra: ' + fmt(s.h) + ' mm',
     'Comprimento: ' + fmt(s.lenMm) + ' mm · Altura do bloco: ' + fmt(s.blockH) + ' mm',
-    'Diâmetro (rotativo): ' + fmt(s.d) + ' mm · ' + Math.round(s.deg) + '° da volta' + (s.rotary ? ' · usar rotativo' : '')
-  ].join('\n');
+    'Diâmetro (rotativo): ' + fmt(s.d) + ' mm · ' + Math.round(s.deg) + '° da volta' + (s.rotary ? ' · usar rotativo' : ''),
+    s.logo ? 'Logo: ' + fmt(s.logo.w) + ' × ' + fmt(s.logo.h) + ' mm · ' + s.logo.side + ' · centro a ' + fmt(s.logo.fromBase) + ' mm da base · Ø ' + fmt(s.logo.d) + ' mm' : ''
+  ].filter(Boolean).join('\n');
   const out = $('copyOut');
   const done = () => { $('copyLabel').textContent = 'Medidas copiadas'; };
   const fallback = () => { out.value = txt; out.hidden = false; out.focus(); out.select(); $('copyLabel').textContent = 'Selecione e copie abaixo'; };
   try {
     navigator.clipboard.writeText(txt).then(done, fallback);
   } catch (e) { fallback(); }
+});
+
+/* ---------- link para o cliente ---------- */
+// Tudo vai dentro do próprio link (depois do #): nada é enviado para servidor.
+async function deflate(u8) {
+  if (!('CompressionStream' in window)) return { z: false, data: u8 };
+  const buf = await new Response(new Blob([u8]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();
+  return { z: true, data: new Uint8Array(buf) };
+}
+async function inflate(u8) {
+  const buf = await new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer();
+  return new Uint8Array(buf);
+}
+function b64url(u8) {
+  let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function unb64url(t) {
+  t = t.replace(/-/g, '+').replace(/_/g, '/'); while (t.length % 4) t += '=';
+  const s = atob(t), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u;
+}
+function shrinkMask(m, maxSide) {
+  const k = Math.min(1, maxSide / Math.max(m.w, m.h));
+  if (k >= 1) return m;
+  const w = Math.max(1, Math.round(m.w * k)), h = Math.max(1, Math.round(m.h * k)), bits = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    let on = 0, n = 0;
+    const sx0 = Math.floor(x / k), sx1 = Math.min(m.w, Math.floor((x + 1) / k)), sy0 = Math.floor(y / k), sy1 = Math.min(m.h, Math.floor((y + 1) / k));
+    for (let sy = sy0; sy < Math.max(sy1, sy0 + 1); sy++) for (let sx = sx0; sx < Math.max(sx1, sx0 + 1); sx++) { on += m.bits[sy * m.w + sx]; n++; }
+    bits[y * w + x] = on * 2 >= n ? 1 : 0;
+  }
+  return { w, h, bits };
+}
+async function buildShareUrl() {
+  const c = state.color;
+  const meta = { p: state.product, c: { n: c.name, h: c.hex, i: c.inox ? 1 : 0 }, f: state.font, t: [state.line1, state.line2], h: state.h, v: state.vpos };
+  let packed = new Uint8Array(0);
+  if (state.logo) {
+    const src = state.logoInv ? { w: state.logo.w, h: state.logo.h, bits: state.logo.bits.map((b) => b ? 0 : 1) } : state.logo;
+    const m = shrinkMask(src, 360);
+    packed = new Uint8Array(Math.ceil(m.bits.length / 8));
+    for (let i = 0; i < m.bits.length; i++) if (m.bits[i]) packed[i >> 3] |= 128 >> (i & 7);
+    meta.L = { w: m.w, h: m.h, lw: state.logoW, lv: state.logoV, la: state.logoA };
+  }
+  const js = new TextEncoder().encode(JSON.stringify(meta));
+  const all = new Uint8Array(4 + js.length + packed.length);
+  new DataView(all.buffer).setUint32(0, js.length);
+  all.set(js, 4); all.set(packed, 4 + js.length);
+  const out = await deflate(all);
+  return location.origin + location.pathname + '#p=' + (out.z ? 'z' : 'r') + b64url(out.data);
+}
+async function readShared(hash) {
+  const raw = hash.slice(3);
+  let u8 = unb64url(raw.slice(1));
+  if (raw[0] === 'z') u8 = await inflate(u8);
+  const n = new DataView(u8.buffer, u8.byteOffset).getUint32(0);
+  const meta = JSON.parse(new TextDecoder().decode(u8.subarray(4, 4 + n)));
+  const packed = u8.subarray(4 + n);
+  return { meta, packed };
+}
+function applyShared({ meta, packed }) {
+  if (PRODUCTS.some((p) => p.id === meta.p)) state.product = meta.p;
+  const known = COLORS.find((c) => c.name === meta.c.n && c.hex === meta.c.h);
+  state.color = known || { name: meta.c.n, hex: meta.c.h, inox: !!meta.c.i };
+  if (FONTS[meta.f]) state.font = meta.f;
+  state.line1 = meta.t[0] || ''; state.line2 = meta.t[1] || '';
+  state.h = meta.h; state.vpos = meta.v;
+  $('line1').value = state.line1; $('line2').value = state.line2;
+  if (meta.L) {
+    const { w, h } = meta.L, bits = new Uint8Array(w * h);
+    for (let i = 0; i < bits.length; i++) bits[i] = (packed[i >> 3] >> (7 - (i & 7))) & 1;
+    state.logo = { w, h, bits }; state.logoInv = false;
+    state.logoW = meta.L.lw; state.logoV = meta.L.lv; state.logoA = meta.L.la;
+    rebuildLogoCanvas();
+  }
+}
+function enterViewer() {
+  document.body.classList.add('viewer');
+  document.title = "Prévia do seu pedido · Art's Brindes";
+  document.querySelector('.top h1').textContent = 'Prévia do seu pedido';
+  document.querySelector('.top p').textContent = 'Gire a peça com o dedo para ver todos os lados.';
+  const list = $('viewerList');
+  const rows = [
+    ['Produto', PRODUCTS.find((p) => p.id === state.product).label],
+    ['Cor', state.color.name],
+    ['Texto', [state.line1, state.line2].filter((t) => t.trim()).join(' / ') || '—'],
+    ['Fonte', FONTS[state.font].name]
+  ];
+  if (state.logo) rows.push(['Logo', 'Sim, na ' + ({ 0: 'frente', 90: 'lateral direita', 180: 'parte de trás', '-90': 'lateral esquerda' }[state.logoA])]);
+  list.innerHTML = '';
+  rows.forEach(([k, v]) => { const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = v; list.append(dt, dd); });
+  $('viewerCard').hidden = false;
+  if (WHATSAPP) {
+    const a = $('waApprove');
+    a.href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Olá! Vi a prévia do ' + rows[0][1] + ' e aprovo a gravação: ' + location.href);
+    a.hidden = false;
+  }
+}
+const shareMsg = (t, bad) => { const m = $('shareMsg'); m.textContent = t; m.style.color = bad ? 'var(--bad)' : 'var(--ok)'; };
+function showLink(url) { const o = $('shareOut'); o.value = url; o.hidden = false; o.focus(); o.select(); }
+$('shareBtn').addEventListener('click', async () => {
+  const url = await buildShareUrl();
+  const text = "Olá! Veja como vai ficar a gravação do seu pedido na Art's Brindes:";
+  if (navigator.share) {
+    try { await navigator.share({ title: "Prévia do seu pedido · Art's Brindes", text, url }); shareMsg('Link enviado.'); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  window.open('https://wa.me/?text=' + encodeURIComponent(text + ' ' + url), '_blank', 'noopener');
+  shareMsg('Abrindo o WhatsApp. Se não abrir, use Copiar link.');
+});
+$('copyLinkBtn').addEventListener('click', async () => {
+  const url = await buildShareUrl();
+  try { await navigator.clipboard.writeText(url); shareMsg('Link copiado. Cole na conversa com o cliente.'); }
+  catch (e) { showLink(url); shareMsg('Selecione e copie o link abaixo.'); }
+});
+$('imgBtn').addEventListener('click', async () => {
+  renderer.render(scene, camera);
+  const src = renderer.domElement;
+  const out = document.createElement('canvas');
+  out.width = src.width; out.height = src.height + Math.round(src.width * 0.12);
+  const x = out.getContext('2d');
+  const g = x.createRadialGradient(out.width / 2, out.height * 0.38, 10, out.width / 2, out.height * 0.38, out.height * 0.8);
+  g.addColorStop(0, '#4A4A52'); g.addColorStop(1, '#1E1E22');
+  x.fillStyle = g; x.fillRect(0, 0, out.width, out.height);
+  x.drawImage(src, 0, 0);
+  const fs = Math.round(out.width * 0.04);
+  x.font = '900 ' + fs + 'px Archivo, Arial, sans-serif';
+  x.textBaseline = 'middle';
+  const y = src.height + (out.height - src.height) / 2;
+  x.fillStyle = '#FFFFFF'; x.fillText("ART'S", out.width * 0.05, y);
+  const wA = x.measureText("ART'S ").width;
+  x.fillStyle = '#FF6A00'; x.fillText('BRINDES', out.width * 0.05 + wA, y);
+  x.font = '600 ' + Math.round(fs * 0.7) + 'px Archivo, Arial, sans-serif';
+  x.fillStyle = '#B4B4BC'; x.textAlign = 'right'; x.fillText('Prévia da gravação', out.width * 0.95, y);
+  const blob = await new Promise((r) => out.toBlob(r, 'image/png'));
+  const file = new File([blob], 'previa-arts-brindes.png', { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: "Prévia · Art's Brindes" }); shareMsg('Imagem enviada.'); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = file.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  shareMsg('Imagem salva.');
 });
 
 /* ---------- câmera e vistas ---------- */
@@ -874,8 +1272,15 @@ function loop(now) {
 }
 
 resize();
+let viewerMode = false;
+if (location.hash.startsWith('#p=')) {
+  try { applyShared(await readShared(location.hash)); viewerMode = true; }
+  catch (e) { console.warn('Link de prévia inválido', e); }
+}
+if (viewerMode) { enterViewer(); resize(); }
 buildProduct();
 setView(0, null, true);
+if (viewerMode && state.logo && state.logoA !== 0) setView(state.logoA, null, true);
 loadFontThenDraw();
 document.fonts.ready.then(drawText);
 requestAnimationFrame(loop);

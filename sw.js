@@ -1,5 +1,5 @@
 // Mantém o app abrindo mesmo com internet fraca: tenta a rede primeiro, cai no cache se falhar.
-const CACHE = 'arts-brindes-v3';
+const CACHE = 'arts-brindes-v4';
 self.addEventListener('install', (e) => { self.skipWaiting(); });
 self.addEventListener('activate', (e) => { e.waitUntil(self.clients.claim()); });
 self.addEventListener('fetch', (e) => {
