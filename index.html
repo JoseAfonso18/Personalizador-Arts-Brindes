@@ -8,6 +8,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Art's Brindes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <title>Provador 3D Art's Brindes</title>
 <style>
 :root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -120,6 +123,7 @@ input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--ac
 .copy-out { width: 100%; min-height: 0; font-size: 13px; padding: 10px; border-radius: 10px; background: var(--raised); border: 1px solid var(--line); color: var(--fg2); resize: none; }
 .foot { font-size: 12.5px; color: var(--muted); line-height: 1.5; max-width: 60ch; }
 
+.install { height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 14px; }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
 </style>
 
@@ -131,6 +135,7 @@ input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--ac
     <h1>Provador 3D</h1>
     <p>Escolha o produto e a cor, digite o texto e gire a peça para ver a gravação.</p>
   </div>
+  <button type="button" id="installBtn" class="install" hidden>Instalar app</button>
 </header>
 
 <main class="layout">
@@ -803,5 +808,19 @@ document.fonts.ready.then(drawText);
 requestAnimationFrame(loop);
 </script>
 
+<script>
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function () {}); }
+var deferredInstall = null;
+window.addEventListener('beforeinstallprompt', function (e) {
+  e.preventDefault(); deferredInstall = e;
+  document.getElementById('installBtn').hidden = false;
+});
+document.getElementById('installBtn').addEventListener('click', function () {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  deferredInstall.userChoice.finally(function () { deferredInstall = null; document.getElementById('installBtn').hidden = true; });
+});
+window.addEventListener('appinstalled', function () { document.getElementById('installBtn').hidden = true; });
+</script>
 </body>
 </html>
