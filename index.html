@@ -1513,6 +1513,34 @@ function showViewerItem(i) {
     });
   }
 }
+// Encurta o link pelo is.gd (gratuito). Se falhar, devolve o link completo.
+const shortCache = new Map();
+function shorten(longUrl) {
+  if (shortCache.has(longUrl)) return Promise.resolve(shortCache.get(longUrl));
+  if (longUrl.length > 4900) return Promise.resolve(longUrl);
+  return new Promise((resolve) => {
+    const cb = '__isgd' + Date.now() + Math.floor(Math.random() * 1000);
+    const sc = document.createElement('script');
+    let done = false;
+    const finish = (u) => {
+      if (done) return; done = true;
+      clearTimeout(timer); delete window[cb]; sc.remove();
+      if (u !== longUrl) shortCache.set(longUrl, u);
+      resolve(u);
+    };
+    const timer = setTimeout(() => finish(longUrl), 7000);
+    window[cb] = (r) => finish(r && r.shorturl ? r.shorturl : longUrl);
+    sc.onerror = () => finish(longUrl);
+    sc.src = 'https://is.gd/create.php?format=json&callback=' + cb + '&url=' + encodeURIComponent(longUrl);
+    document.head.appendChild(sc);
+  });
+}
+async function shareUrl() {
+  shareMsg('Gerando link…');
+  const long = await buildShareUrl();
+  const u = await shorten(long);
+  return u;
+}
 const shareMsg = (t, bad) => { const m = $('shareMsg'); m.textContent = t; m.style.color = bad ? 'var(--bad)' : 'var(--ok)'; };
 function showLink(url) { const o = $('shareOut'); o.value = url; o.hidden = false; o.focus(); o.select(); }
 function editWarning() {
@@ -1521,19 +1549,21 @@ function editWarning() {
 }
 $('shareBtn').addEventListener('click', async () => {
   if (editWarning()) return;
-  const url = await buildShareUrl();
-  const text = "Olá! Veja como vai ficar a gravação do seu pedido na Art's Brindes:";
+  const url = await shareUrl();
+  const short = !url.includes('#p=');
+  const text = "Olá! Veja a prévia do seu pedido na Art's Brindes 👇";
+  const full = text + '\n' + url;
   if (navigator.share) {
-    try { await navigator.share({ title: "Prévia do seu pedido · Art's Brindes", text, url }); shareMsg('Link enviado.'); return; }
-    catch (e) { if (e && e.name === 'AbortError') return; }
+    try { await navigator.share({ text: full }); shareMsg(short ? 'Link curto enviado.' : 'Link enviado (o encurtador não respondeu, foi o link completo).'); return; }
+    catch (e) { if (e && e.name === 'AbortError') { shareMsg(''); return; } }
   }
-  window.open('https://wa.me/?text=' + encodeURIComponent(text + ' ' + url), '_blank', 'noopener');
+  window.open('https://wa.me/?text=' + encodeURIComponent(full), '_blank', 'noopener');
   shareMsg('Abrindo o WhatsApp. Se não abrir, use Copiar link.');
 });
 $('copyLinkBtn').addEventListener('click', async () => {
   if (editWarning()) return;
-  const url = await buildShareUrl();
-  try { await navigator.clipboard.writeText(url); shareMsg('Link copiado. Cole na conversa com o cliente.'); }
+  const url = await shareUrl();
+  try { await navigator.clipboard.writeText(url); shareMsg(url.includes('#p=') ? 'Link copiado (completo: o encurtador não respondeu).' : 'Link curto copiado: ' + url.replace('https://', '')); }
   catch (e) { showLink(url); shareMsg('Selecione e copie o link abaixo.'); }
 });
 $('imgBtn').addEventListener('click', async () => {
