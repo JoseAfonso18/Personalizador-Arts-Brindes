@@ -127,7 +127,11 @@ input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--ac
 .quick .grp { pointer-events: auto; display: flex; align-items: center; gap: 4px; padding: 4px; border-radius: 14px; background: rgba(18, 18, 20, 0.8); border: 1px solid var(--line); }
 .quick button { width: 44px; height: 44px; border: none; border-radius: 10px; background: var(--raised); color: var(--fg); font-weight: 800; font-size: 16px; display: grid; place-items: center; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
 .quick button:active { background: var(--accent); color: var(--accent-ink); }
-.quick output { min-width: 62px; text-align: center; font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+.quick .qsize { display: flex; align-items: center; gap: 2px; padding: 0 2px; font-weight: 700; font-size: 14px; }
+.quick .qsize input { width: 46px; height: 40px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--fg); text-align: right; font: inherit; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+.quick .qsize input::-webkit-outer-spin-button, .quick .qsize input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.quick .qsize input:focus { border-color: var(--accent); background: var(--surface); outline: none; }
+.quick .qsize span { color: var(--fg2); }
 .quick .lbl { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--muted); padding: 0 4px; }
 .stage .live { position: absolute; right: 12px; top: 12px; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: rgba(18, 18, 20, 0.78); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .stage .live i { width: 8px; height: 8px; border-radius: 50%; display: block; background: var(--ok); }
@@ -173,7 +177,7 @@ input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--ac
       <div class="quick">
         <div class="grp" role="group" aria-label="Tamanho da letra">
           <button type="button" id="qSizeDown" aria-label="Diminuir a letra">A−</button>
-          <output id="qSize">10 mm</output>
+          <label class="qsize"><input id="qSize" type="number" inputmode="decimal" min="3" max="40" step="0.5" value="10" aria-label="Altura da letra em milímetros"><span>mm</span></label>
           <button type="button" id="qSizeUp" aria-label="Aumentar a letra">A+</button>
         </div>
         <div class="grp" role="group" aria-label="Posição do texto">
@@ -214,7 +218,7 @@ input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--ac
       <div class="fonts" id="fonts" role="group" aria-label="Fonte"></div>
     </div>
 
-    <div class="group">
+    <div class="group" hidden>
       <label class="label" for="hSlider">Altura da letra <output id="hOut" for="hSlider">10 mm</output></label>
       <input id="hSlider" type="range" min="3" max="40" step="0.5" value="10">
       <label class="label" for="vSlider">Posição na altura <output id="vOut" for="vSlider">meio</output></label>
@@ -380,6 +384,8 @@ function setV(v) {
   $('vSlider').value = state.vpos;
   drawText();
 }
+$('qSize').addEventListener('change', (e) => { const v = parseFloat(String(e.target.value).replace(',', '.')); if (!isNaN(v)) setH(v); e.target.value = String(state.h); });
+$('qSize').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
 holdRepeat($('qSizeDown'), () => setH(state.h - 0.5));
 holdRepeat($('qSizeUp'), () => setH(state.h + 0.5));
 holdRepeat($('qDown'), () => setV(state.vpos - 1.5));
@@ -748,7 +754,8 @@ function drawText() {
   const needRotary = lenMm > flatZone;
 
   $('hOut').textContent = fmt(h) + ' mm';
-  $('qSize').textContent = fmt(h) + ' mm';
+  if (document.activeElement !== $('qSize')) $('qSize').value = String(h);
+  $('qSize').max = $('hSlider').max;
   $('liveTxt').textContent = lines.length ? fmt(lenMm) + ' × ' + fmt(blockH) + ' mm' : 'sem texto';
   $('vOut').textContent = state.vpos < 40 ? 'mais embaixo' : state.vpos > 60 ? 'mais em cima' : 'meio';
   $('sLen').textContent = lines.length ? fmt(lenMm) + ' mm' : '–';
