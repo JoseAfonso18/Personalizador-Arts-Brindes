@@ -67,7 +67,7 @@ button { cursor: pointer; }
 .stage-wrap { display: flex; flex-direction: column; gap: 10px; }
 .stage { position: relative; height: clamp(340px, 56svh, 620px); border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--line); background: radial-gradient(120% 90% at 50% 38%, var(--stage-a) 0%, var(--stage-b) 70%); touch-action: none; }
 .stage canvas { display: block; width: 100%; height: 100%; }
-.stage .hint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: rgba(18, 18, 20, 0.72); color: var(--fg2); font-size: 13px; pointer-events: none; white-space: nowrap; }
+.stage .hint { position: absolute; left: 50%; top: 52px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: rgba(18, 18, 20, 0.72); color: var(--fg2); font-size: 13px; pointer-events: none; white-space: nowrap; }
 .stage .tag { position: absolute; left: 12px; top: 12px; padding: 6px 10px; border-radius: 8px; background: rgba(18, 18, 20, 0.72); color: var(--fg2); font-size: 12px; font-weight: 600; letter-spacing: 0.3px; }
 .stage .tag i { font-style: normal; color: var(--accent); }
 .stage .fail { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--fg2); }
@@ -123,6 +123,19 @@ input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--ac
 .copy-out { width: 100%; min-height: 0; font-size: 13px; padding: 10px; border-radius: 10px; background: var(--raised); border: 1px solid var(--line); color: var(--fg2); resize: none; }
 .foot { font-size: 12.5px; color: var(--muted); line-height: 1.5; max-width: 60ch; }
 
+.stage .quick { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; pointer-events: none; }
+.quick .grp { pointer-events: auto; display: flex; align-items: center; gap: 4px; padding: 4px; border-radius: 14px; background: rgba(18, 18, 20, 0.8); border: 1px solid var(--line); }
+.quick button { width: 44px; height: 44px; border: none; border-radius: 10px; background: var(--raised); color: var(--fg); font-weight: 800; font-size: 16px; display: grid; place-items: center; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.quick button:active { background: var(--accent); color: var(--accent-ink); }
+.quick output { min-width: 62px; text-align: center; font-weight: 700; font-size: 14px; font-variant-numeric: tabular-nums; }
+.quick .lbl { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--muted); padding: 0 4px; }
+.stage .live { position: absolute; right: 12px; top: 12px; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: rgba(18, 18, 20, 0.78); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stage .live i { width: 8px; height: 8px; border-radius: 50%; display: block; background: var(--ok); }
+@media (max-width: 899px) {
+  .stage-wrap { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); margin-inline: -16px; padding: 8px 16px 10px; box-shadow: 0 10px 18px -12px rgba(0, 0, 0, 0.8); }
+  .stage { height: clamp(270px, 46svh, 460px); }
+  .views button { height: 38px; font-size: 13px; }
+}
 .install { height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 14px; }
 @media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
 </style>
@@ -146,12 +159,25 @@ input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--ac
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.35-5.65"/><path d="M20 4v4h-4"/></svg>
         Arraste para girar · pinça para zoom
       </div>
+      <div class="live" aria-live="polite"><i id="liveDot"></i><span id="liveTxt">–</span></div>
+      <div class="quick">
+        <div class="grp" role="group" aria-label="Tamanho da letra">
+          <button type="button" id="qSizeDown" aria-label="Diminuir a letra">A−</button>
+          <output id="qSize">10 mm</output>
+          <button type="button" id="qSizeUp" aria-label="Aumentar a letra">A+</button>
+        </div>
+        <div class="grp" role="group" aria-label="Posição do texto">
+          <span class="lbl">ALTURA</span>
+          <button type="button" id="qDown" aria-label="Descer o texto"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+          <button type="button" id="qUp" aria-label="Subir o texto"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
+        </div>
+      </div>
     </div>
     <div class="views" role="group" aria-label="Posição da peça">
       <button type="button" id="vFront" aria-pressed="true">Frente</button>
       <button type="button" id="vSide" aria-pressed="false">Lado</button>
       <button type="button" id="vBack" aria-pressed="false">Costas</button>
-      <button type="button" id="vSpin" aria-pressed="false">Girar sozinho</button>
+      <button type="button" id="vSpin" aria-pressed="false">Girar</button>
     </div>
   </section>
 
@@ -321,6 +347,33 @@ $('line1').addEventListener('input', (e) => { state.line1 = e.target.value; draw
 $('line2').addEventListener('input', (e) => { state.line2 = e.target.value; drawText(); });
 $('hSlider').addEventListener('input', (e) => { state.h = Number(e.target.value); drawText(); });
 $('vSlider').addEventListener('input', (e) => { state.vpos = Number(e.target.value); drawText(); });
+function holdRepeat(btn, step) {
+  let t = null, r = null;
+  const stop = () => { clearTimeout(t); clearInterval(r); t = r = null; };
+  btn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    step();
+    t = setTimeout(() => { r = setInterval(step, 70); }, 380);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => btn.addEventListener(ev, stop));
+  btn.addEventListener('click', (e) => { if (e.detail === 0) step(); });
+  btn.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+function setH(v) {
+  const max = Number($('hSlider').max);
+  state.h = Math.min(max, Math.max(3, Math.round(v * 2) / 2));
+  $('hSlider').value = state.h;
+  drawText();
+}
+function setV(v) {
+  state.vpos = Math.min(90, Math.max(10, Math.round(v)));
+  $('vSlider').value = state.vpos;
+  drawText();
+}
+holdRepeat($('qSizeDown'), () => setH(state.h - 0.5));
+holdRepeat($('qSizeUp'), () => setH(state.h + 0.5));
+holdRepeat($('qDown'), () => setV(state.vpos - 1.5));
+holdRepeat($('qUp'), () => setV(state.vpos + 1.5));
 
 /* ---------- 3D ---------- */
 const stage = $('stage');
@@ -598,7 +651,7 @@ function buildProduct() {
   const maxR = Math.max(-box.min.x, box.max.x, -box.min.z, box.max.z);
   const vHalf = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
   const hHalf = vHalf * Math.max(camera.aspect || 1, 0.4);
-  const dist = Math.max((maxH / 2) / vHalf, maxR / hHalf, 330) * 1.12;
+  const dist = Math.max((maxH / 2) / vHalf, maxR / hHalf, 330) * 1.32;
   controls.minDistance = dist * 0.45;
   controls.maxDistance = dist * 1.6;
   setView(-18, dist, true);
@@ -685,6 +738,8 @@ function drawText() {
   const needRotary = lenMm > flatZone;
 
   $('hOut').textContent = fmt(h) + ' mm';
+  $('qSize').textContent = fmt(h) + ' mm';
+  $('liveTxt').textContent = lines.length ? fmt(lenMm) + ' × ' + fmt(blockH) + ' mm' : 'sem texto';
   $('vOut').textContent = state.vpos < 40 ? 'mais embaixo' : state.vpos > 60 ? 'mais em cima' : 'meio';
   $('sLen').textContent = lines.length ? fmt(lenMm) + ' mm' : '–';
   $('sH').textContent = lines.length ? fmt(blockH) + ' mm' : '–';
@@ -707,6 +762,7 @@ function drawText() {
     : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16.5v.5"/></svg>';
   const st = $('status');
   st.style.color = color;
+  $('liveDot').style.background = color;
   st.innerHTML = icon + '<span></span>';
   st.querySelector('span').textContent = msg;
 
