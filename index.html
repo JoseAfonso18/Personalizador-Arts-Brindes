@@ -1,0 +1,807 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121214">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Art's Brindes">
+<title>Provador 3D Art's Brindes</title>
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Great+Vibes&family=Dancing+Script:wght@600&family=Allura&family=Satisfy&family=Cinzel:wght@600&family=Playfair+Display:wght@600&family=Bebas+Neue&family=Oswald:wght@500&family=Montserrat:wght@600&family=Righteous&family=Lobster&family=Pacifico&display=swap">
+<style>
+/* Layout: phone = 3D stage on top, controls below; desktop = sticky stage left, controls right. Single dark look = Art's Brindes brand. */
+:root {
+  color-scheme: dark;
+  --bg: #121214;
+  --surface: #1C1C20;
+  --raised: #26262B;
+  --line: #35353C;
+  --fg: #FFFFFF;
+  --fg2: #B4B4BC;
+  --muted: #8E8E97;
+  --accent: #FF6A00;
+  --accent-soft: rgba(255, 106, 0, 0.12);
+  --accent-ink: #121214;
+  --ok: #6FD39A;
+  --warn: #FFB454;
+  --bad: #FF7A6B;
+  --stage-a: #4A4A52;
+  --stage-b: #1E1E22;
+  --font-ui: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --r-lg: 18px;
+  --r-md: 12px;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--fg); }
+body { font-family: var(--font-ui); font-size: 15px; line-height: 1.45; padding-inline: 16px; padding-block: 0 32px; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { max-width: 1200px; margin: 0 auto; padding-block: 18px 14px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { font-weight: 900; font-size: 13px; letter-spacing: 1.6px; }
+.brand b { color: var(--accent); font-weight: 900; }
+.top h1 { margin: 4px 0 0; font-size: 28px; line-height: 1.1; font-weight: 800; letter-spacing: -0.5px; text-wrap: balance; }
+.top p { margin: 4px 0 0; color: var(--fg2); font-size: 14px; max-width: 46ch; }
+
+.layout { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+@media (min-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: start; }
+  .stage-wrap { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+}
+
+.stage-wrap { display: flex; flex-direction: column; gap: 10px; }
+.stage { position: relative; height: clamp(340px, 56svh, 620px); border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--line); background: radial-gradient(120% 90% at 50% 38%, var(--stage-a) 0%, var(--stage-b) 70%); touch-action: none; }
+.stage canvas { display: block; width: 100%; height: 100%; }
+.stage .hint { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: rgba(18, 18, 20, 0.72); color: var(--fg2); font-size: 13px; pointer-events: none; white-space: nowrap; }
+.stage .tag { position: absolute; left: 12px; top: 12px; padding: 6px 10px; border-radius: 8px; background: rgba(18, 18, 20, 0.72); color: var(--fg2); font-size: 12px; font-weight: 600; letter-spacing: 0.3px; }
+.stage .tag i { font-style: normal; color: var(--accent); }
+.stage .fail { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--fg2); }
+
+.views { display: flex; gap: 8px; flex-wrap: wrap; }
+.views button { flex: 1 1 0; min-width: 72px; height: 44px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 14px; color: var(--fg2); }
+.views button[aria-pressed="true"] { border-color: var(--accent); color: var(--fg); background: var(--accent-soft); }
+
+.panel { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.group { display: flex; flex-direction: column; gap: 10px; }
+.label { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 1.6px; color: var(--muted); text-transform: uppercase; }
+.label output, .label span.val { letter-spacing: 0; text-transform: none; font-size: 15px; font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; }
+
+.field { height: 52px; width: 100%; padding: 0 14px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); font-size: 17px; font-weight: 500; outline: none; }
+.field:focus { border-color: var(--accent); }
+.field::placeholder { color: #6E6E77; }
+
+.seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.seg button { min-height: 56px; padding: 8px 10px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); text-align: left; display: flex; flex-direction: column; gap: 2px; }
+.seg button strong { font-size: 14px; font-weight: 700; }
+.seg button small { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.seg button[aria-pressed="true"] small { color: var(--accent-ink); opacity: 0.75; }
+
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.sw { width: 44px; height: 44px; border-radius: 50%; padding: 0; border: 2px solid transparent; background: transparent; display: grid; place-items: center; }
+.sw span { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #4A4A52; display: block; }
+.sw[aria-pressed="true"] { border-color: var(--accent); }
+.sw.custom { position: relative; overflow: hidden; }
+.sw.custom span { background: conic-gradient(#e44 0 16%, #eb4 0 33%, #4c6 0 50%, #49d 0 66%, #84d 0 83%, #e4a 0); }
+.sw.custom input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+.fonts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.fonts button { height: 58px; padding: 0 10px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); color: var(--fg); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; line-height: 1; }
+.fonts button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+
+input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--accent); }
+
+.specs { padding: 16px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 14px; }
+.specs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+.spec { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.spec span { font-size: 12px; color: var(--muted); }
+.spec strong { font-size: 21px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; }
+.bar { height: 10px; border-radius: 5px; background: var(--raised); overflow: hidden; display: flex; justify-content: center; position: relative; }
+.bar i { display: block; height: 100%; border-radius: 5px; background: var(--ok); transition: width 0.2s; }
+.bar-legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+.status { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; font-weight: 600; line-height: 1.4; }
+.status svg { flex: none; margin-top: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid var(--line); color: var(--fg2); }
+.chip.on { border-color: var(--accent); color: var(--accent); }
+.copy { height: 54px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.copy-out { width: 100%; min-height: 0; font-size: 13px; padding: 10px; border-radius: 10px; background: var(--raised); border: 1px solid var(--line); color: var(--fg2); resize: none; }
+.foot { font-size: 12.5px; color: var(--muted); line-height: 1.5; max-width: 60ch; }
+
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div>
+    <div class="brand">ART'S <b>BRINDES</b></div>
+    <h1>Provador 3D</h1>
+    <p>Escolha o produto e a cor, digite o texto e gire a peça para ver a gravação.</p>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage-wrap" aria-label="Visualização 3D">
+    <div class="stage" id="stage">
+      <div class="tag" id="engraveTag">Laser revela o <i>inox</i></div>
+      <div class="hint" id="hint">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.35-5.65"/><path d="M20 4v4h-4"/></svg>
+        Arraste para girar · pinça para zoom
+      </div>
+    </div>
+    <div class="views" role="group" aria-label="Posição da peça">
+      <button type="button" id="vFront" aria-pressed="true">Frente</button>
+      <button type="button" id="vSide" aria-pressed="false">Lado</button>
+      <button type="button" id="vBack" aria-pressed="false">Costas</button>
+      <button type="button" id="vSpin" aria-pressed="false">Girar sozinho</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Opções">
+    <div class="group">
+      <label class="label" for="line1">Texto</label>
+      <input class="field" id="line1" type="text" maxlength="60" value="Maria Eduarda" placeholder="Nome, frase, empresa">
+      <label class="label" for="line2">Segunda linha <span class="val" style="color:var(--muted);font-weight:500;font-size:13px">opcional</span></label>
+      <input class="field" id="line2" type="text" maxlength="60" value="" placeholder="Ex.: data, cargo, 15 anos">
+    </div>
+
+    <div class="group">
+      <div class="label">Produto</div>
+      <div class="seg" id="products" role="group" aria-label="Produto"></div>
+    </div>
+
+    <div class="group">
+      <div class="label">Cor <span class="val" id="colorName">Preto</span></div>
+      <div class="swatches" id="swatches" role="group" aria-label="Cor do produto"></div>
+    </div>
+
+    <div class="group">
+      <div class="label">Fonte <span class="val" id="fontName">Great Vibes</span></div>
+      <div class="fonts" id="fonts" role="group" aria-label="Fonte"></div>
+    </div>
+
+    <div class="group">
+      <label class="label" for="hSlider">Altura da letra <output id="hOut" for="hSlider">10 mm</output></label>
+      <input id="hSlider" type="range" min="3" max="40" step="0.5" value="10">
+      <label class="label" for="vSlider">Posição na altura <output id="vOut" for="vSlider">meio</output></label>
+      <input id="vSlider" type="range" min="10" max="90" step="1" value="50">
+    </div>
+
+    <div class="specs" aria-live="polite">
+      <div class="label">Medidas para o EzCad</div>
+      <div class="specs-grid">
+        <div class="spec"><span>Comprimento do texto</span><strong id="sLen">–</strong></div>
+        <div class="spec"><span>Altura do bloco</span><strong id="sH">–</strong></div>
+        <div class="spec"><span>Diâmetro no ponto</span><strong id="sD">–</strong></div>
+        <div class="spec"><span>Volta ocupada</span><strong id="sDeg">–</strong></div>
+      </div>
+      <div class="group" style="gap:6px">
+        <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+        <div class="bar-legend"><span>costas</span><span>frente</span><span>costas</span></div>
+      </div>
+      <div class="status" id="status"></div>
+      <div class="chips" id="chips"></div>
+      <button type="button" class="copy" id="copyBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>
+        <span id="copyLabel">Copiar medidas</span>
+      </button>
+      <textarea class="copy-out" id="copyOut" rows="5" readonly hidden aria-label="Medidas para copiar"></textarea>
+    </div>
+
+    <p class="foot">As medidas dos produtos são de exemplo e precisam ser trocadas pelas reais. As fontes também são de exemplo: depois entram as da sua máquina. A altura da letra é o tamanho da fonte, o mesmo valor do campo de altura no EzCad.</p>
+  </section>
+</main>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+/* ---------- dados (exemplo) ---------- */
+const FONTS = [
+  { name: 'Great Vibes', fam: "'Great Vibes'", wt: 400, chip: 26 },
+  { name: 'Dancing Script', fam: "'Dancing Script'", wt: 600, chip: 22 },
+  { name: 'Allura', fam: "'Allura'", wt: 400, chip: 27 },
+  { name: 'Satisfy', fam: "'Satisfy'", wt: 400, chip: 21 },
+  { name: 'Cinzel', fam: "'Cinzel'", wt: 600, chip: 16 },
+  { name: 'Playfair Display', fam: "'Playfair Display'", wt: 600, chip: 17 },
+  { name: 'Bebas Neue', fam: "'Bebas Neue'", wt: 400, chip: 24 },
+  { name: 'Oswald', fam: "'Oswald'", wt: 500, chip: 19 },
+  { name: 'Montserrat', fam: "'Montserrat'", wt: 600, chip: 15 },
+  { name: 'Righteous', fam: "'Righteous'", wt: 400, chip: 18 },
+  { name: 'Lobster', fam: "'Lobster'", wt: 400, chip: 20 },
+  { name: 'Pacifico', fam: "'Pacifico'", wt: 400, chip: 18 }
+];
+const COLORS = [
+  { name: 'Preto', hex: '#1C1C1E' },
+  { name: 'Grafite', hex: '#4E5054' },
+  { name: 'Verde Militar', hex: '#3F4E33' },
+  { name: 'Azul Marinho', hex: '#1F3657' },
+  { name: 'Vinho', hex: '#6A2130' },
+  { name: 'Rosa', hex: '#D49AAE' },
+  { name: 'Bege', hex: '#CDBFA4' },
+  { name: 'Branco', hex: '#EDEDEB' },
+  { name: 'Inox', hex: '#C3C6CB', inox: true }
+];
+const PRODUCTS = [
+  { id: 'copo', label: 'Copo Stanley 473 ml', sub: 'Ø 72–86 mm · medido' },
+  { id: 'caneca', label: 'Caneca Stanley 709 ml', sub: 'Ø 86 mm · medido' },
+  { id: 'garrafa', label: 'Garrafa 1 L', sub: 'Ø 92 mm' },
+  { id: 'slim', label: 'Garrafa 500 ml', sub: 'Ø 70 mm' }
+];
+
+const state = { product: 'copo', color: COLORS[0], font: 0, line1: 'Maria Eduarda', line2: '', h: 10, vpos: 50, spin: false };
+
+/* ---------- UI ---------- */
+const $ = (id) => document.getElementById(id);
+function pressGroup(container, btn) {
+  container.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
+}
+
+const prodBox = $('products');
+PRODUCTS.forEach((p) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.setAttribute('aria-pressed', p.id === state.product ? 'true' : 'false');
+  b.innerHTML = '<strong></strong><small></small>';
+  b.querySelector('strong').textContent = p.label;
+  b.querySelector('small').textContent = p.sub;
+  b.addEventListener('click', () => { state.product = p.id; pressGroup(prodBox, b); buildProduct(); });
+  prodBox.appendChild(b);
+});
+
+const swBox = $('swatches');
+COLORS.forEach((c, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'sw';
+  b.setAttribute('aria-label', c.name);
+  b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+  const s = document.createElement('span');
+  s.style.background = c.inox ? 'linear-gradient(135deg,#e6e8eb,#9a9ea5 55%,#d9dbde)' : c.hex;
+  b.appendChild(s);
+  b.addEventListener('click', () => { state.color = c; pressGroup(swBox, b); applyColor(); });
+  swBox.appendChild(b);
+});
+{
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'sw custom';
+  b.setAttribute('aria-label', 'Outra cor');
+  b.setAttribute('aria-pressed', 'false');
+  b.innerHTML = '<span></span>';
+  const inp = document.createElement('input');
+  inp.type = 'color';
+  inp.id = 'customColor';
+  inp.value = '#FF6A00';
+  inp.setAttribute('aria-label', 'Escolher outra cor');
+  inp.addEventListener('input', () => { state.color = { name: 'Personalizada', hex: inp.value }; pressGroup(swBox, b); applyColor(); });
+  b.appendChild(inp);
+  swBox.appendChild(b);
+}
+
+const fontBox = $('fonts');
+FONTS.forEach((f, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = f.name;
+  b.style.fontFamily = f.fam + ', cursive';
+  b.style.fontWeight = f.wt;
+  b.style.fontSize = f.chip + 'px';
+  b.setAttribute('aria-pressed', i === state.font ? 'true' : 'false');
+  b.addEventListener('click', () => { state.font = i; pressGroup(fontBox, b); $('fontName').textContent = f.name; loadFontThenDraw(); });
+  fontBox.appendChild(b);
+});
+
+$('line1').addEventListener('input', (e) => { state.line1 = e.target.value; drawText(); });
+$('line2').addEventListener('input', (e) => { state.line2 = e.target.value; drawText(); });
+$('hSlider').addEventListener('input', (e) => { state.h = Number(e.target.value); drawText(); });
+$('vSlider').addEventListener('input', (e) => { state.vpos = Number(e.target.value); drawText(); });
+
+/* ---------- 3D ---------- */
+const stage = $('stage');
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+} catch (err) {
+  stage.insertAdjacentHTML('beforeend', '<div class="fail">Este aparelho não conseguiu abrir o 3D. Tente atualizar o navegador.</div>');
+  throw err;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.35;
+stage.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
+key.position.set(220, 320, 260);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xffe2cc, 1.4);
+rim.position.set(-260, 120, -200);
+scene.add(rim);
+const top = new THREE.DirectionalLight(0xffffff, 1.2);
+top.position.set(-60, 400, 120);
+scene.add(top);
+const fill = new THREE.HemisphereLight(0xdfe4ea, 0x3a3a40, 1.0);
+scene.add(fill);
+
+const camera = new THREE.PerspectiveCamera(28, 1, 1, 5000);
+scene.add(camera);
+camera.add(key);
+key.position.set(140, 200, 80);
+camera.add(rim);
+rim.position.set(-260, 160, -900);
+const fillCam = new THREE.DirectionalLight(0xffffff, 0.9);
+camera.add(fillCam);
+fillCam.position.set(-180, -40, 60);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enablePan = false;
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minPolarAngle = Math.PI * 0.18;
+controls.maxPolarAngle = Math.PI * 0.62;
+controls.autoRotateSpeed = 2.2;
+controls.addEventListener('start', () => { $('hint').hidden = true; markView(null); });
+
+/* materiais */
+const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1c1c1e, metalness: 0.1, roughness: 0.62, envMapIntensity: 0.25 });
+{
+  const nc = document.createElement('canvas');
+  nc.width = nc.height = 256;
+  const nx = nc.getContext('2d');
+  const img = nx.createImageData(256, 256);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = 110 + Math.random() * 60;
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255;
+  }
+  nx.putImageData(img, 0, 0);
+  const noise = new THREE.CanvasTexture(nc);
+  noise.wrapS = noise.wrapT = THREE.RepeatWrapping;
+  noise.repeat.set(14, 8);
+  bodyMat.bumpMap = noise;
+  bodyMat.bumpScale = 0.35;
+}
+const steelMat = new THREE.MeshStandardMaterial({ color: 0xc9ccd1, metalness: 1, roughness: 0.28, side: THREE.DoubleSide });
+const lidMat = new THREE.MeshStandardMaterial({ color: 0x17171a, metalness: 0.1, roughness: 0.45 });
+const engraveCanvas = document.createElement('canvas');
+const engraveTex = new THREE.CanvasTexture(engraveCanvas);
+engraveTex.colorSpace = THREE.SRGBColorSpace;
+engraveTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+const engraveMat = new THREE.MeshStandardMaterial({ map: engraveTex, transparent: true, alphaTest: 0.04, metalness: 0.9, roughness: 0.3, polygonOffset: true, polygonOffsetFactor: -2 });
+
+let productGroup = null;
+let band = null; // { y0, y1, rAt(y), mesh, handleGap, height }
+
+function lathe(points, mat, segments = 160) {
+  return new THREE.Mesh(new THREE.LatheGeometry(points.map(([r, y]) => new THREE.Vector2(r, y)), segments), mat);
+}
+function cyl(r, h, y, mat, seg = 128) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), mat);
+  m.position.y = y;
+  return m;
+}
+
+/* Copo Stanley 473 ml com tampa abridor — medidas das fotos e vídeos (mm):
+   base de inox Ø69 (0–19), corpo pintado Ø72→Ø86 (19–150), aro de inox Ø88 (150–164).
+   Tampa: borda em "tigela" que sobe até ~13 mm nas duas abas ao lado da boca de beber
+   e fica baixa (~1 mm) do lado do abridor; placa de inox 26 × 63 com furo do abridor. */
+function varLathe(profileAt, a0, a1, seg, mat, caps) {
+  const pos = [], idx = [];
+  const P = (r, y, a) => [r * Math.sin(a), y, r * Math.cos(a)];
+  const n = profileAt(a0).length;
+  for (let i = 0; i <= seg; i++) {
+    const a = a0 + (a1 - a0) * i / seg;
+    profileAt(a).forEach(([r, y]) => pos.push(...P(r, y, a)));
+  }
+  for (let i = 0; i < seg; i++) {
+    for (let j = 0; j < n - 1; j++) {
+      const k = i * n + j, k2 = (i + 1) * n + j;
+      idx.push(k, k2, k + 1, k + 1, k2, k2 + 1);
+    }
+  }
+  if (caps) {
+    [a0, a1].forEach((a) => {
+      const base = pos.length / 3;
+      const prof = profileAt(a);
+      prof.forEach(([r, y]) => pos.push(...P(r, y, a)));
+      const tris = THREE.ShapeUtils.triangulateShape(prof.map(([r, y]) => new THREE.Vector2(r, y)), []);
+      tris.forEach(([i, j, k]) => idx.push(base + i, base + j, base + k));
+    });
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  return new THREE.Mesh(geo, mat);
+}
+function buildCopo(g) {
+  const rAt = (y) => 36 + 7 * (y - 19) / 131;
+  const lidPlastic = new THREE.MeshStandardMaterial({ color: 0x202023, metalness: 0.05, roughness: 0.58, side: THREE.DoubleSide });
+  const innerMat = new THREE.MeshStandardMaterial({ color: 0x9a9da2, metalness: 1, roughness: 0.38, side: THREE.DoubleSide });
+  // base de inox
+  g.add(lathe([[0, 1.2], [26, 0.2], [32.8, 0.2], [34.2, 1.4], [34.6, 3.5], [34.6, 18.6], [35.4, 19.1]], steelMat));
+  // corpo pintado (área de gravação)
+  g.add(lathe([[35.4, 19.1], [36, 19.5], [36.1, 20.8], [43, 149], [43.2, 150]], bodyMat));
+  // aro de inox com borda enrolada
+  g.add(lathe([[43.2, 150], [43.7, 151], [44, 163.2], [43.7, 164.1], [42.4, 164.5], [41.3, 164]], steelMat));
+  // parede interna e fundo com o ressalto central
+  g.add(lathe([[41.3, 164], [40.9, 160], [34.6, 46], [33.2, 41], [30, 39.4], [20, 38.6], [17.5, 40.2], [0, 40.8]], innerMat));
+
+  // tampa: fundo rebaixado ~6 mm dentro do copo; só a borda aparece acima do aro
+  const y0 = 158.5;
+  const gap = 0.78;
+  const aMax = Math.PI - gap / 2;
+  const rimTop = 165.0;
+  const yT = rimTop + 1.2;    // topo da borda: reto, na mesma altura em volta toda
+  const profile = () => {
+    const pts = [[34.4, y0], [35.3, y0 + 0.35], [36.1, y0 + 1.1]];
+    for (let t = 0.15; t <= 1.0001; t += 0.17) pts.push([36.1 + 6.9 * t, y0 + 1.1 + (yT - 0.4 - y0 - 1.1) * t]);
+    pts.push([43.5, yT - 0.05], [44.4, yT], [45.0, yT - 0.35], [45.25, yT - 1.0], [44.7, rimTop - 0.05], [42.6, rimTop - 0.35], [41.2, rimTop - 0.9], [41.2, y0 - 2]);
+    return pts;
+  };
+  g.add(varLathe(profile, -aMax, aMax, 220, lidPlastic, true));
+  // fundo da tampa com o vão da boca de beber
+  const deck = new THREE.Shape();
+  const al = Math.asin(15 / 34.8);
+  deck.absarc(0, 0, 34.8, Math.PI / 2 + al, Math.PI / 2 - al + Math.PI * 2, false);
+  deck.lineTo(15, 22);
+  deck.quadraticCurveTo(15, 20, 13, 20);
+  deck.lineTo(-13, 20);
+  deck.quadraticCurveTo(-15, 20, -15, 22);
+  deck.closePath();
+  const deckMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(deck, { depth: 1.6, bevelEnabled: false, curveSegments: 96 }), lidPlastic);
+  deckMesh.rotation.x = -Math.PI / 2;
+  deckMesh.position.y = y0 - 1.6;
+  g.add(deckMesh);
+  // trilho rebaixado onde a placa corre
+  const trilho = new THREE.Mesh(new THREE.BoxGeometry(29, 0.5, 52), new THREE.MeshStandardMaterial({ color: 0x111113, roughness: 0.7 }));
+  trilho.position.set(0, y0 + 0.05, 6);
+  g.add(trilho);
+  // placa de inox: sai do fundo, junto da boca, e sobe em rampa até a beirada com o abridor
+  const pl = new THREE.Shape();
+  const rr = 2.2, W = 13, yA = -40.5, yB = 19.5;
+  pl.moveTo(-W + rr, yA);
+  pl.lineTo(W - rr, yA); pl.quadraticCurveTo(W, yA, W, yA + rr);
+  pl.lineTo(W, yB - rr); pl.quadraticCurveTo(W, yB, W - rr, yB);
+  pl.lineTo(-W + rr, yB); pl.quadraticCurveTo(-W, yB, -W, yB - rr);
+  pl.lineTo(-W, yA + rr); pl.quadraticCurveTo(-W, yA, -W + rr, yA);
+  const slot = new THREE.Path();
+  slot.moveTo(-8.5, -37.8); slot.lineTo(8.5, -37.8); slot.lineTo(8.5, -31.3); slot.lineTo(-8.5, -31.3); slot.closePath();
+  pl.holes.push(slot);
+  const tilt = Math.atan((yT + 0.2 - (y0 + 0.6)) / (40.5 + 19.5));
+  const plateMat = new THREE.MeshStandardMaterial({ color: 0x9da1a6, metalness: 1, roughness: 0.5 });
+  const plate = new THREE.Mesh(new THREE.ExtrudeGeometry(pl, { depth: 1.1, bevelEnabled: true, bevelThickness: 0.2, bevelSize: 0.2, bevelSegments: 2, curveSegments: 16 }), plateMat);
+  plate.rotation.x = -Math.PI / 2 - tilt;
+  plate.position.set(0, y0 + 0.6 + 19.5 * Math.tan(tilt), 0);
+  g.add(plate);
+  // ponta dobrada do abridor, apoiada na beirada
+  const lip = new THREE.Mesh(new THREE.BoxGeometry(26, 1.1, 3.4), plateMat);
+  lip.rotation.x = -0.6;
+  lip.position.set(0, yT + 0.9, 41.6);
+  g.add(lip);
+  return { y0: 26, y1: 143, rAt, handleGap: 0, height: yT + 2 };
+}
+/* Caneca de chopp Stanley 709 ml (24 oz) — medidas das fotos (mm):
+   altura 173; pé Ø97 (0–18) com curva até o corpo Ø86→Ø85 (33–156); aro de inox Ø86 (156–173).
+   Alça preta: braços 132–151 e 40–60, sai 53 mm do corpo, 24 mm de largura, pegada inclinada. */
+function buildCaneca(g) {
+  const rAt = (y) => 43 - 0.6 * (y - 37) / 119;
+  const plastic = new THREE.MeshStandardMaterial({ color: 0x1b1b1e, metalness: 0.05, roughness: 0.55 });
+  const innerMat = new THREE.MeshStandardMaterial({ color: 0x9a9da2, metalness: 1, roughness: 0.38, side: THREE.DoubleSide });
+  // fundo preto
+  g.add(lathe([[0, 1.6], [30, 1.0], [44, 0.5]], plastic));
+  // pé e corpo pintados
+  g.add(lathe([[44, 0.5], [46.9, 0.5], [47.9, 1.3], [48.5, 3.2], [48.6, 6], [48.6, 16.5], [48.3, 20], [47.2, 23.5], [45.4, 27], [43.7, 30.5], [43.1, 34], [43, 37], [42.4, 156]], bodyMat));
+  // aro de inox
+  g.add(lathe([[42.4, 156], [43, 156.2], [43.1, 157], [43.1, 172.3], [42.7, 173.1], [41.6, 173.2], [40.9, 172.5]], steelMat));
+  // parede interna e fundo com ressalto
+  g.add(lathe([[40.9, 172.5], [40.6, 168], [39.4, 30], [37, 25.5], [20, 24.2], [16.5, 26.4], [0, 27.2]], innerMat));
+
+  // alça (perfil em C extrudado, presa no lado direito, sem entrar no copo)
+  const sh = new THREE.Shape();
+  sh.moveTo(1, 150.4);
+  sh.lineTo(34, 149.6);
+  sh.quadraticCurveTo(41.2, 149.4, 41.2, 142.6);
+  sh.lineTo(49.2, 50);
+  sh.quadraticCurveTo(49.4, 42.2, 42, 42.2);
+  sh.lineTo(15, 42.2);
+  sh.lineTo(7, 38);
+  sh.lineTo(1, 38);
+  sh.lineTo(1, 58.8);
+  sh.lineTo(5, 58.8);
+  sh.lineTo(9, 55.8);
+  sh.lineTo(36.6, 55.8);
+  sh.quadraticCurveTo(41.2, 55.8, 41, 60.5);
+  sh.lineTo(33.4, 129.6);
+  sh.quadraticCurveTo(33, 136.2, 27, 136.2);
+  sh.lineTo(1, 136.8);
+  sh.closePath();
+  const hGeo = new THREE.ExtrudeGeometry(sh, { depth: 19.6, bevelEnabled: true, bevelThickness: 1.2, bevelSize: 1.2, bevelSegments: 4, curveSegments: 12 });
+  hGeo.translate(0, 0, -9.8);
+  const handle = new THREE.Mesh(hGeo, plastic);
+  handle.position.x = 42.2;
+  g.add(handle);
+  // parafusos nos braços
+  [[151.6, 1], [36.8, -1]].forEach(([y, s]) => {
+    const screw = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 0.6, 24), steelMat);
+    screw.position.set(42.2 + 7, y + s * 0.2, 0);
+    g.add(screw);
+  });
+  const r = 42.7;
+  return { y0: 40, y1: 152, rAt, handleGap: Math.PI * r + 32, height: 173.2 };
+}
+function buildGarrafa(g, r, hb, neck, capH) {
+  const rAt = () => r;
+  g.add(lathe([[0, 0], [r - 3, 0], [r, 3], [r, hb], [r - 2, hb + 8], [neck + 7, hb + 22], [neck, hb + 31], [neck, hb + 40]], bodyMat));
+  g.add(cyl(neck + 2.6, capH, hb + 36 + capH / 2, lidMat));
+  g.add(cyl(neck + 3.2, 4, hb + 38, steelMat));
+  const loop = new THREE.Mesh(new THREE.TorusGeometry(neck * 0.55, 3, 16, 48), lidMat);
+  loop.position.set(0, hb + 36 + capH + neck * 0.45, 0);
+  g.add(loop);
+  return { y0: 18, y1: hb - 14, rAt, handleGap: 0, height: hb + 36 + capH + neck };
+}
+
+function buildProduct() {
+  if (productGroup) {
+    scene.remove(productGroup);
+    productGroup.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
+  }
+  productGroup = new THREE.Group();
+  let info;
+  if (state.product === 'copo') info = buildCopo(productGroup);
+  else if (state.product === 'caneca') info = buildCaneca(productGroup);
+  else if (state.product === 'garrafa') info = buildGarrafa(productGroup, 46, 212, 27, 36);
+  else info = buildGarrafa(productGroup, 35, 190, 21, 30);
+
+  const bandH = info.y1 - info.y0;
+  const off = 0.25;
+  const geo = new THREE.CylinderGeometry(info.rAt(info.y1) + off, info.rAt(info.y0) + off, bandH, 200, 1, true, Math.PI, Math.PI * 2);
+  const mesh = new THREE.Mesh(geo, engraveMat);
+  mesh.position.y = (info.y0 + info.y1) / 2;
+  productGroup.add(mesh);
+  band = Object.assign({}, info, { bandH, mesh });
+
+  productGroup.position.y = -info.height / 2;
+  scene.add(productGroup);
+
+  const maxH = info.height;
+  controls.target.set(0, 0, 0);
+  const box = new THREE.Box3().setFromObject(productGroup);
+  const maxR = Math.max(-box.min.x, box.max.x, -box.min.z, box.max.z);
+  const vHalf = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const hHalf = vHalf * Math.max(camera.aspect || 1, 0.4);
+  const dist = Math.max((maxH / 2) / vHalf, maxR / hHalf, 330) * 1.12;
+  controls.minDistance = dist * 0.45;
+  controls.maxDistance = dist * 1.6;
+  setView(-18, dist, true);
+  $('hSlider').max = Math.min(40, Math.floor(bandH));
+  if (state.h > bandH) { state.h = Math.floor(bandH); $('hSlider').value = state.h; }
+  applyColor();
+  drawText();
+}
+
+function applyColor() {
+  const c = state.color;
+  $('colorName').textContent = c.name;
+  if (c.inox) {
+    bodyMat.color.set('#C3C6CB');
+    bodyMat.metalness = 1; bodyMat.roughness = 0.32; bodyMat.envMapIntensity = 1;
+    engraveMat.metalness = 0.15; engraveMat.roughness = 0.85;
+    $('engraveTag').innerHTML = 'Laser escurece o <i>inox</i>';
+  } else {
+    bodyMat.color.set(c.hex);
+    bodyMat.metalness = 0.1; bodyMat.roughness = 0.62; bodyMat.envMapIntensity = 0.25;
+    engraveMat.metalness = 0.95; engraveMat.roughness = 0.28;
+    $('engraveTag').innerHTML = 'Laser revela o <i>inox</i>';
+  }
+  drawText();
+}
+
+/* ---------- texto gravado ---------- */
+const PXY = 6; // px por mm na vertical da textura
+function fontCss(px) {
+  const f = FONTS[state.font];
+  return `${f.wt} ${px}px ${f.fam}, cursive`;
+}
+async function loadFontThenDraw() {
+  try { await document.fonts.load(fontCss(64)); } catch (e) { /* segue com fallback */ }
+  drawText();
+}
+
+let lastSpecs = null;
+function drawText() {
+  if (!band) return;
+  const lines = [state.line1, state.line2].map((s) => s.trim()).filter(Boolean);
+  const h = state.h;
+  const lineGap = h * 1.25;
+  const blockH = lines.length ? h + (lines.length - 1) * lineGap : 0;
+  const yText = band.y0 + band.bandH * (state.vpos / 100);
+  const r = band.rAt(yText);
+  const circ = 2 * Math.PI * r;
+
+  const W = 2048;
+  const H = Math.round(band.bandH * PXY);
+  if (engraveCanvas.width !== W || engraveCanvas.height !== H) {
+    engraveCanvas.width = W; engraveCanvas.height = H;
+  }
+  const ctx = engraveCanvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+  const pxX = W / circ;
+  ctx.font = fontCss(h * PXY);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = state.color.inox ? '#2E2F33' : '#E6E8EC';
+
+  let lenMm = 0;
+  lines.forEach((l) => { lenMm = Math.max(lenMm, ctx.measureText(l).width / PXY); });
+
+  const cy = H - (state.vpos / 100) * H;
+  [-W, 0, W].forEach((shift) => {
+    ctx.save();
+    ctx.translate(W / 2 + shift, cy);
+    ctx.scale(pxX / PXY, 1);
+    lines.forEach((l, i) => {
+      const y = (i - (lines.length - 1) / 2) * lineGap * PXY;
+      ctx.fillText(l, 0, y);
+    });
+    ctx.restore();
+  });
+  engraveTex.needsUpdate = true;
+
+  // medidas
+  const usable = circ - band.handleGap;
+  const deg = lenMm / circ * 360;
+  const fitsLen = lenMm <= usable;
+  const fitsH = blockH <= band.bandH;
+  const flatZone = 2 * Math.sqrt(Math.max(0, r * r - (r - 1.5) * (r - 1.5)));
+  const needRotary = lenMm > flatZone;
+
+  $('hOut').textContent = fmt(h) + ' mm';
+  $('vOut').textContent = state.vpos < 40 ? 'mais embaixo' : state.vpos > 60 ? 'mais em cima' : 'meio';
+  $('sLen').textContent = lines.length ? fmt(lenMm) + ' mm' : '–';
+  $('sH').textContent = lines.length ? fmt(blockH) + ' mm' : '–';
+  $('sD').textContent = fmt(r * 2) + ' mm';
+  $('sDeg').textContent = lines.length ? Math.round(deg) + '°' : '–';
+
+  const ok = fitsLen && fitsH;
+  const fill = $('barFill');
+  fill.style.width = Math.min(100, lenMm / circ * 100) + '%';
+  fill.style.background = ok ? 'var(--ok)' : 'var(--bad)';
+
+  let msg, color;
+  if (!lines.length) { msg = 'Digite o texto para ver as medidas.'; color = 'var(--muted)'; }
+  else if (!fitsLen) { msg = band.handleGap ? 'O texto encosta na alça. Diminua a letra ou o texto.' : 'O texto dá mais de uma volta. Diminua a letra ou o texto.'; color = 'var(--bad)'; }
+  else if (!fitsH) { msg = 'O bloco ficou mais alto que a área gravável.'; color = 'var(--bad)'; }
+  else if (lenMm > usable * 0.88) { msg = 'Cabe, mas as pontas ficam bem próximas.'; color = 'var(--warn)'; }
+  else { msg = 'Cabe na área de gravação.'; color = 'var(--ok)'; }
+  const icon = color === 'var(--ok)'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16.5v.5"/></svg>';
+  const st = $('status');
+  st.style.color = color;
+  st.innerHTML = icon + '<span></span>';
+  st.querySelector('span').textContent = msg;
+
+  const chips = $('chips');
+  chips.innerHTML = '';
+  if (lines.length) {
+    const c1 = document.createElement('span');
+    c1.className = 'chip' + (needRotary ? ' on' : '');
+    c1.textContent = needRotary ? 'Usar eixo rotativo' : 'Dá para gravar sem rotativo';
+    chips.appendChild(c1);
+    const c2 = document.createElement('span');
+    c2.className = 'chip';
+    c2.textContent = 'Sem rotativo: até ~' + Math.round(flatZone) + ' mm';
+    chips.appendChild(c2);
+  }
+
+  lastSpecs = { lines, font: FONTS[state.font].name, h, lenMm, blockH, d: r * 2, deg, product: PRODUCTS.find((p) => p.id === state.product).label, color: state.color.name, rotary: needRotary };
+  $('copyOut').hidden = true;
+  $('copyLabel').textContent = 'Copiar medidas';
+}
+function fmt(n) { return (Math.round(n * 10) / 10).toLocaleString('pt-BR'); }
+
+/* copiar */
+$('copyBtn').addEventListener('click', () => {
+  if (!lastSpecs || !lastSpecs.lines.length) return;
+  const s = lastSpecs;
+  const txt = [
+    'Produto: ' + s.product + ' (' + s.color + ')',
+    'Texto: ' + s.lines.join(' / '),
+    'Fonte: ' + s.font,
+    'Altura da letra: ' + fmt(s.h) + ' mm',
+    'Comprimento: ' + fmt(s.lenMm) + ' mm · Altura do bloco: ' + fmt(s.blockH) + ' mm',
+    'Diâmetro (rotativo): ' + fmt(s.d) + ' mm · ' + Math.round(s.deg) + '° da volta' + (s.rotary ? ' · usar rotativo' : '')
+  ].join('\n');
+  const out = $('copyOut');
+  const done = () => { $('copyLabel').textContent = 'Medidas copiadas'; };
+  const fallback = () => { out.value = txt; out.hidden = false; out.focus(); out.select(); $('copyLabel').textContent = 'Selecione e copie abaixo'; };
+  try {
+    navigator.clipboard.writeText(txt).then(done, fallback);
+  } catch (e) { fallback(); }
+});
+
+/* ---------- câmera e vistas ---------- */
+let anim = null;
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function setView(azDeg, dist, instant) {
+  const d = dist || camera.position.distanceTo(controls.target);
+  const phi = Math.PI * 0.44;
+  const th = azDeg * Math.PI / 180;
+  const to = new THREE.Vector3(d * Math.sin(phi) * Math.sin(th), d * Math.cos(phi), d * Math.sin(phi) * Math.cos(th));
+  if (instant || reduce) { camera.position.copy(to); controls.update(); return; }
+  const from = camera.position.clone();
+  const sFrom = new THREE.Spherical().setFromVector3(from);
+  const sTo = new THREE.Spherical().setFromVector3(to);
+  let dTh = sTo.theta - sFrom.theta;
+  if (dTh > Math.PI) dTh -= Math.PI * 2;
+  if (dTh < -Math.PI) dTh += Math.PI * 2;
+  anim = { t0: performance.now(), dur: 550, sFrom, dTh, dPhi: sTo.phi - sFrom.phi, dR: sTo.radius - sFrom.radius };
+}
+function markView(btn) {
+  ['vFront', 'vSide', 'vBack'].forEach((id) => $(id).setAttribute('aria-pressed', $(id) === btn ? 'true' : 'false'));
+}
+$('vFront').addEventListener('click', (e) => { setView(0); markView(e.currentTarget); });
+$('vSide').addEventListener('click', (e) => { setView(90); markView(e.currentTarget); });
+$('vBack').addEventListener('click', (e) => { setView(180); markView(e.currentTarget); });
+$('vSpin').addEventListener('click', (e) => {
+  state.spin = !state.spin;
+  controls.autoRotate = state.spin && !reduce;
+  e.currentTarget.setAttribute('aria-pressed', state.spin ? 'true' : 'false');
+});
+
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+
+function loop(now) {
+  if (anim) {
+    const t = Math.min(1, (now - anim.t0) / anim.dur);
+    const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    const s = new THREE.Spherical(anim.sFrom.radius + anim.dR * e, anim.sFrom.phi + anim.dPhi * e, anim.sFrom.theta + anim.dTh * e);
+    camera.position.setFromSpherical(s).add(controls.target);
+    if (t >= 1) anim = null;
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+
+resize();
+buildProduct();
+setView(0, null, true);
+loadFontThenDraw();
+document.fonts.ready.then(drawText);
+requestAnimationFrame(loop);
+</script>
+
+</body>
+</html>
