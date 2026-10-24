@@ -6,6 +6,7 @@ Os scripts em `migrations/` são rodados **em ordem**, uma vez cada, no painel d
 | Arquivo | O que faz |
 |---|---|
 | `0001_base_usuarios.sql` | tabela `perfis` (nome de cada usuário), cria perfil sozinho ao criar usuário, função de auditoria (`created_by`, `updated_by`...) |
+| `0002_produtos.sql` | `produtos`, `faixas_preco` (sem sobreposição) e `variacoes` (cores, acréscimo, estoque); função `preco_unitario(produto, quantidade, variacao)` |
 
 ## Configuração de login (uma vez)
 
@@ -18,3 +19,13 @@ Os scripts em `migrations/` são rodados **em ordem**, uma vez cada, no painel d
 update public.perfis set nome = 'José' where email = 'email-do-jose@...';
 update public.perfis set nome = 'Mãe'  where email = 'email-da-mae@...';
 ```
+
+## Testes do SQL
+
+Antes de rodar no Supabase, os scripts são testados num Postgres em memória (PGlite):
+
+```bash
+cd app && npm test
+```
+
+Testes em `app/test/`.
