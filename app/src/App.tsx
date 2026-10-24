@@ -1,0 +1,45 @@
+import { createBrowserRouter, Navigate, Outlet, RouterProvider } from 'react-router'
+import { Loader2 } from 'lucide-react'
+import { AppLayout } from '@/components/layout/AppLayout'
+import { AuthProvider, useAuth } from '@/lib/auth'
+import { MENU } from '@/lib/menu'
+import { EmBreve } from '@/pages/EmBreve'
+import { Login } from '@/pages/Login'
+import { Painel } from '@/pages/Painel'
+
+/** Só deixa passar quem está logado; senão manda pro login. */
+function RotaProtegida() {
+  const { carregando, session } = useAuth()
+  if (carregando)
+    return (
+      <div className="flex min-h-dvh items-center justify-center">
+        <Loader2 className="text-primary size-8 animate-spin" />
+      </div>
+    )
+  return session ? <Outlet /> : <Navigate to="/login" replace />
+}
+
+const router = createBrowserRouter([
+  { path: '/login', element: <Login /> },
+  {
+    element: <RotaProtegida />,
+    children: [
+      {
+        element: <AppLayout />,
+        children: [
+          { index: true, element: <Painel /> },
+          ...MENU.filter((m) => m.caminho !== '/').map((m) => ({ path: m.caminho, element: <EmBreve item={m} /> })),
+          { path: '*', element: <Navigate to="/" replace /> },
+        ],
+      },
+    ],
+  },
+])
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  )
+}
