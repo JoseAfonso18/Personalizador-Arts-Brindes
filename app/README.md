@@ -22,7 +22,11 @@ app/
 ├── public/               ícones e arquivos servidos como estão
 └── src/
     ├── main.tsx          ponto de entrada
-    ├── App.tsx           tela atual
+    ├── App.tsx           rotas (login, telas protegidas)
+    ├── pages/            uma tela por arquivo (Login, Painel...)
+    ├── components/layout menu lateral (PC) e abas (celular)
+    ├── lib/auth.tsx      quem está logado (useAuth)
+    ├── lib/menu.ts       itens do menu
     ├── index.css         Tailwind + cores e fontes da Art's
     ├── lib/supabase.ts   conexão com o banco
     ├── lib/utils.ts      cn() para juntar classes
@@ -35,6 +39,10 @@ app/
 - `npm run build` — checa os tipos e gera `dist/`
 - `npm run lint` — procura problemas no código
 - `npx shadcn@latest add input` — adiciona um componente do shadcn
+
+## Banco
+
+Scripts SQL e passo a passo em [`../supabase/README.md`](../supabase/README.md).
 
 ## Deploy
 
