@@ -1,4 +1,6 @@
-# Personalizador Art's Brindes
+# Art's Brindes — Personalizador e Sistema de Gestão
+
+Este repositório tem o Personalizador (raiz, GitHub Pages) e o Sistema de Gestão (em construção em `app/`). Plano: `docs/prd-sistema-gestao.md`. Glossário: `CONTEXT.md`. Converse com o usuário em português.
 
 ## Agent skills
 
