@@ -1,18 +1,15 @@
 import { cn } from '@/lib/utils'
 
 /**
- * Marca da Art's Brindes. Por enquanto é texto; quando a logo chegar,
- * troca aqui (public/brand/logo-claro.svg e logo-escuro.svg) e vale para o sistema todo.
+ * Logo oficial da Art's Brindes (public/brand/).
+ * Mostra a versão de "Brindes" cinza no tema claro e branca no escuro.
+ * A altura vem pela className (ex.: "h-9"); a largura acompanha (proporção ~2:1).
  */
-export function Logo({ className, compacta = false }: { className?: string; compacta?: boolean }) {
+export function Logo({ className }: { className?: string }) {
   return (
-    <span className={cn('inline-flex items-center gap-2 font-semibold tracking-tight', className)}>
-      <span className="bg-primary text-primary-foreground grid size-7 place-items-center rounded-lg text-sm font-bold">A</span>
-      {!compacta && (
-        <span className="leading-none">
-          Art's <span className="text-primary-strong">Brindes</span>
-        </span>
-      )}
+    <span className={cn('inline-flex h-9 shrink-0', className)}>
+      <img src="/brand/logo-claro.svg" alt="Art's Brindes" className="h-full w-auto dark:hidden" />
+      <img src="/brand/logo-escuro.svg" alt="Art's Brindes" className="hidden h-full w-auto dark:block" />
     </span>
   )
 }

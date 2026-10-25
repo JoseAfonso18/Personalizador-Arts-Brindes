@@ -1,6 +1,6 @@
 # Dub — Style Reference
 
-> **Como aplicamos na Art's Brindes:** seguimos a estrutura (bordas de 1px, Inter, compacto, raios 6/8/12/16/pílula, menu com fundo suave no item ativo, fundo de pontinhos no login), mas o azul vira o **laranja da Art's** (`#ea580c` claro / `#f26b1d` escuro) e há **tema escuro**. Tokens em `app/src/index.css`. Satoshi foi substituída por Inter (peso 500, -0.02em), como o próprio guia sugere.
+> **Como aplicamos na Art's Brindes:** seguimos a estrutura (bordas de 1px, Inter, compacto, raios 6/8/12/16/pílula, menu com fundo suave no item ativo, fundo de pontinhos no login), mas o azul vira o **laranja da Art's `#FA5B04`** (da logo; texto laranja em `#c94400` no claro e `#ff8a4c` no escuro para contraste), o cinza da marca é `#424242` e há **tema escuro**. Tokens em `app/src/index.css`. Logo, favicon e ícones em `app/public/` (`brand/logo-claro.svg`, `brand/logo-escuro.svg`, `favicon.svg`, `icon-*.png`). Satoshi foi substituída por Inter (peso 500, -0.02em), como o próprio guia sugere.
 
 > frosted link dashboard on rice paper
 

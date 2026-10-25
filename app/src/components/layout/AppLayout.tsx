@@ -19,8 +19,8 @@ export function AppLayout() {
     <div className="flex min-h-dvh">
       {/* Barra lateral (PC) */}
       <aside className="bg-muted/40 sticky top-0 hidden h-dvh w-60 shrink-0 flex-col border-r md:flex">
-        <div className="px-4 py-4">
-          <Logo />
+        <div className="px-4 pt-4 pb-3">
+          <Logo className="h-14" />
         </div>
         <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3">
           {MENU.map((m) => (
@@ -56,7 +56,7 @@ export function AppLayout() {
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Topo (celular) */}
         <header className="bg-background/85 sticky top-0 z-20 flex items-center justify-between border-b px-4 py-2.5 backdrop-blur md:hidden">
-          <Logo />
+          <Logo className="h-10" />
           <span className="bg-foreground text-background grid size-8 place-items-center rounded-full text-sm font-semibold">{inicial}</span>
         </header>
 

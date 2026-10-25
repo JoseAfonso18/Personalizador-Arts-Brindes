@@ -28,7 +28,7 @@ export function Login() {
     <main className="fundo-pontos flex min-h-dvh flex-col items-center justify-center px-4">
       <div className="flex w-full max-w-sm flex-col gap-6">
       <header className="flex flex-col items-center gap-3 text-center">
-        <Logo className="text-lg" />
+        <Logo className="h-20" />
         <h1 className="text-[36px] leading-[1.1] font-medium">Entrar</h1>
         <p className="text-muted-foreground text-sm">Sistema de gestão da loja</p>
       </header>

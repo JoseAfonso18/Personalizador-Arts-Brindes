@@ -12,20 +12,20 @@ export default defineConfig({
     // PWA: deixa o sistema instalável no celular e no PC
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg', 'apple-touch-icon.png'],
+      includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'brand/*.svg'],
       manifest: {
         name: "Art's Brindes — Gestão",
         short_name: "Art's Gestão",
         description: "Sistema de gestão da Art's Brindes",
         lang: 'pt-BR',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
+        theme_color: '#424242',
+        background_color: '#424242',
         display: 'standalone',
         start_url: '/',
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },
-          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
     }),
