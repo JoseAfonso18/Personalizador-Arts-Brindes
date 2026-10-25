@@ -4,6 +4,8 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { MENU } from '@/lib/menu'
 import { TemaProvider } from '@/lib/tema'
+import { ClienteForm } from '@/pages/ClienteForm'
+import { Clientes } from '@/pages/Clientes'
 import { EmBreve } from '@/pages/EmBreve'
 import { Login } from '@/pages/Login'
 import { Painel } from '@/pages/Painel'
@@ -34,7 +36,10 @@ const router = createBrowserRouter([
           { path: '/produtos', element: <Produtos /> },
           { path: '/produtos/novo', element: <ProdutoForm /> },
           { path: '/produtos/:id', element: <ProdutoForm /> },
-          ...MENU.filter((m) => !['/', '/produtos'].includes(m.caminho)).map((m) => ({ path: m.caminho, element: <EmBreve item={m} /> })),
+          { path: '/clientes', element: <Clientes /> },
+          { path: '/clientes/novo', element: <ClienteForm /> },
+          { path: '/clientes/:id', element: <ClienteForm /> },
+          ...MENU.filter((m) => !['/', '/produtos', '/clientes'].includes(m.caminho)).map((m) => ({ path: m.caminho, element: <EmBreve item={m} /> })),
           { path: '*', element: <Navigate to="/" replace /> },
         ],
       },
