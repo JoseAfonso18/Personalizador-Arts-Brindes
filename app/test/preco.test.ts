@@ -59,3 +59,21 @@ describe('dinheiro', () => {
     expect(valorParaCampo(150)).toBe('150,00')
   })
 })
+
+import { descreverPrazo, proximaEtapa } from '@/lib/pedidos'
+describe('prazo e etapas do pedido', () => {
+  it('descreve o prazo', () => {
+    expect(descreverPrazo('2026-10-20', '2026-10-25')).toEqual({ texto: 'Atrasado 5 dias', tom: 'atrasado' })
+    expect(descreverPrazo('2026-10-24', '2026-10-25')?.texto).toBe('Atrasado 1 dia')
+    expect(descreverPrazo('2026-10-25', '2026-10-25')?.tom).toBe('hoje')
+    expect(descreverPrazo('2026-10-26', '2026-10-25')?.texto).toBe('Entrega amanhã')
+    expect(descreverPrazo('2026-11-05', '2026-10-25')?.texto).toBe('Entrega 05/11')
+    expect(descreverPrazo(null, '2026-10-25')).toBeNull()
+  })
+  it('próxima etapa', () => {
+    expect(proximaEtapa('aprovado')).toBe('gravando')
+    expect(proximaEtapa('pronto')).toBe('entregue')
+    expect(proximaEtapa('entregue')).toBeNull()
+    expect(proximaEtapa('cancelado')).toBeNull()
+  })
+})

@@ -13,6 +13,8 @@ import { OrcamentoForm } from '@/pages/OrcamentoForm'
 import { OrcamentoPublico } from '@/pages/OrcamentoPublico'
 import { Orcamentos } from '@/pages/Orcamentos'
 import { Painel } from '@/pages/Painel'
+import { PedidoDetalhe } from '@/pages/PedidoDetalhe'
+import { Pedidos } from '@/pages/Pedidos'
 import { ProdutoForm } from '@/pages/ProdutoForm'
 import { Produtos } from '@/pages/Produtos'
 
@@ -48,7 +50,9 @@ const router = createBrowserRouter([
           { path: '/orcamentos', element: <Orcamentos /> },
           { path: '/orcamentos/novo', element: <OrcamentoForm /> },
           { path: '/orcamentos/:id', element: <OrcamentoForm /> },
-          ...MENU.filter((m) => !['/', '/produtos', '/clientes', '/configuracoes', '/orcamentos'].includes(m.caminho)).map((m) => ({ path: m.caminho, element: <EmBreve item={m} /> })),
+          { path: '/pedidos', element: <Pedidos /> },
+          { path: '/pedidos/:id', element: <PedidoDetalhe /> },
+          ...MENU.filter((m) => !['/', '/produtos', '/clientes', '/configuracoes', '/orcamentos', '/pedidos'].includes(m.caminho)).map((m) => ({ path: m.caminho, element: <EmBreve item={m} /> })),
           { path: '*', element: <Navigate to="/" replace /> },
         ],
       },
