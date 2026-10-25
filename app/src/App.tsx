@@ -9,6 +9,8 @@ import { Configuracoes } from '@/pages/Configuracoes'
 import { Clientes } from '@/pages/Clientes'
 import { EmBreve } from '@/pages/EmBreve'
 import { Login } from '@/pages/Login'
+import { OrcamentoForm } from '@/pages/OrcamentoForm'
+import { Orcamentos } from '@/pages/Orcamentos'
 import { Painel } from '@/pages/Painel'
 import { ProdutoForm } from '@/pages/ProdutoForm'
 import { Produtos } from '@/pages/Produtos'
@@ -41,7 +43,10 @@ const router = createBrowserRouter([
           { path: '/clientes/novo', element: <ClienteForm /> },
           { path: '/clientes/:id', element: <ClienteForm /> },
           { path: '/configuracoes', element: <Configuracoes /> },
-          ...MENU.filter((m) => !['/', '/produtos', '/clientes', '/configuracoes'].includes(m.caminho)).map((m) => ({ path: m.caminho, element: <EmBreve item={m} /> })),
+          { path: '/orcamentos', element: <Orcamentos /> },
+          { path: '/orcamentos/novo', element: <OrcamentoForm /> },
+          { path: '/orcamentos/:id', element: <OrcamentoForm /> },
+          ...MENU.filter((m) => !['/', '/produtos', '/clientes', '/configuracoes', '/orcamentos'].includes(m.caminho)).map((m) => ({ path: m.caminho, element: <EmBreve item={m} /> })),
           { path: '*', element: <Navigate to="/" replace /> },
         ],
       },
