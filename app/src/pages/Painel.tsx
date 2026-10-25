@@ -7,11 +7,11 @@ import { useAuth } from '@/lib/auth'
 import { formatarBRL } from '@/lib/dinheiro'
 import { formatarData, numeroOrcamento } from '@/lib/orcamento'
 import { listarOrcamentos, type LinhaLista } from '@/lib/orcamentos'
-import { listarPedidos, type LinhaPedido } from '@/lib/pedidos'
+import { aReceber, listarPedidos, SITUACAO_PAGAMENTO, type LinhaPedido } from '@/lib/pedidos'
+import { numeroPedido } from '@/lib/orcamento'
 import { testarConexao } from '@/lib/supabase'
 
 const EM_BREVE = [
-  { titulo: 'A receber', texto: 'Sinais, fiado e vencidos', Icone: Wallet, cor: 'text-success bg-success-soft' },
   { titulo: 'Estoque baixo', texto: 'Cores abaixo do mínimo', Icone: PackageX, cor: 'text-warning bg-warning-soft' },
   { titulo: 'Resultado do mês', texto: 'Vendeu, gastou e lucrou', Icone: TrendingUp, cor: 'text-foreground bg-muted' },
 ]
@@ -33,6 +33,7 @@ export function Painel() {
   const emProducao = (peds ?? []).filter((p) => ['aprovado', 'gravando', 'pronto'].includes(p.status))
   const atrasados = emProducao.filter((p) => p.atrasado).length
   const prontos = emProducao.filter((p) => p.status === 'pronto').length
+  const receber = aReceber(peds ?? [])
   const valorAguardando = aguardando.reduce((s, o) => s + o.total, 0)
   const aprovadosLink = (orcs ?? []).filter((o) => o.situacao === 'aprovado' && o.aprovado_por?.endsWith('(pelo link)') && o.aprovado_em && new Date(o.aprovado_em).getTime() > seteDias)
 
@@ -84,6 +85,39 @@ export function Painel() {
             </div>
           </Card>
         </Link>
+        <Card className={`h-full gap-3 sm:col-span-2 xl:col-span-1 xl:row-span-2 ${receber.fiadoVencido ? 'border-destructive/60' : ''}`}>
+          <div className="flex items-center gap-2.5">
+            <span className="bg-success-soft text-success grid size-8 place-items-center rounded-lg">
+              <Wallet className="size-4" />
+            </span>
+            <p className="text-sm font-medium">A receber</p>
+          </div>
+          <p className="text-2xl font-semibold tracking-tight">{peds ? formatarBRL(receber.total) : '—'}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {receber.sinaisPendentes > 0 && <span className="bg-warning-soft text-warning rounded-full px-2 py-0.5 text-xs font-medium">{receber.sinaisPendentes} sinal{receber.sinaisPendentes > 1 ? 'is' : ''} pendente{receber.sinaisPendentes > 1 ? 's' : ''}</span>}
+            {receber.fiadoVencido > 0 && <span className="bg-destructive-soft text-destructive rounded-full px-2 py-0.5 text-xs font-medium">{formatarBRL(receber.fiadoVencido)} de fiado vencido</span>}
+          </div>
+          {receber.lista.length > 0 ? (
+            <ul className="divide-y border-t">
+              {receber.lista.slice(0, 6).map((p) => (
+                <li key={p.id}>
+                  <Link to={`/pedidos/${p.id}`} className="hover:bg-accent -mx-2 flex items-center justify-between gap-2 rounded-md px-2 py-2 text-sm">
+                    <span className="min-w-0">
+                      <span className="block truncate">{p.cliente_nome}</span>
+                      <span className={`mt-0.5 inline-block rounded-full px-1.5 text-[11px] font-medium ${SITUACAO_PAGAMENTO[p.situacao_pagamento].classe}`}>
+                        {SITUACAO_PAGAMENTO[p.situacao_pagamento].texto}
+                      </span>{' '}
+                      <span className="text-muted-foreground font-mono text-[11px]">{numeroPedido(p.numero)}</span>
+                    </span>
+                    <span className="shrink-0 font-medium">{formatarBRL(p.saldo)}</span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-muted-foreground text-xs">{peds ? 'Nada pendente. 🎉' : 'Carregando…'}</p>
+          )}
+        </Card>
         <Link to="/pedidos">
           <Card className={`hover:border-border-strong hover:shadow-ring h-full gap-3 transition-all ${atrasados ? 'border-destructive/60' : ''}`}>
             <div className="flex items-center gap-2.5">

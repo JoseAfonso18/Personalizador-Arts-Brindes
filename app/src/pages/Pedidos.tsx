@@ -4,7 +4,7 @@ import { ArrowRight, ClipboardList, Loader2, Search, Zap } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { formatarBRL } from '@/lib/dinheiro'
 import { hojeISO, numeroPedido } from '@/lib/orcamento'
-import { descreverPrazo, ETAPAS, listarPedidos, mudarStatusPedido, proximaEtapa, TITULO_STATUS, type LinhaPedido, type StatusPedido } from '@/lib/pedidos'
+import { descreverPrazo, ETAPAS, listarPedidos, mudarStatusPedido, proximaEtapa, SITUACAO_PAGAMENTO, TITULO_STATUS, type LinhaPedido, type StatusPedido } from '@/lib/pedidos'
 import { cn } from '@/lib/utils'
 
 const LIMITE_ENTREGUES = 15
@@ -215,6 +215,12 @@ function Cartao({
         <p className="shrink-0 text-sm font-medium">{formatarBRL(p.total)}</p>
       </div>
       {p.resumo && <p className="text-muted-foreground line-clamp-2 text-xs">{p.resumo}</p>}
+      {p.situacao_pagamento !== 'a_receber' && p.situacao_pagamento !== 'cancelado' && (
+        <span className={cn('inline-block rounded-full px-2 py-0.5 text-[11px] font-medium', SITUACAO_PAGAMENTO[p.situacao_pagamento].classe)}>
+          {SITUACAO_PAGAMENTO[p.situacao_pagamento].texto}
+          {p.situacao_pagamento !== 'pago' && p.saldo > 0 ? ` · falta ${formatarBRL(p.saldo)}` : ''}
+        </span>
+      )}
       <div className="flex items-center justify-between gap-2">
         {prazo ? (
           <span

@@ -77,3 +77,15 @@ describe('prazo e etapas do pedido', () => {
     expect(proximaEtapa('cancelado')).toBeNull()
   })
 })
+
+import { aReceber, type LinhaPedido } from '@/lib/pedidos'
+describe('a receber', () => {
+  const p = (situacao_pagamento: LinhaPedido['situacao_pagamento'], saldo: number) => ({ situacao_pagamento, saldo }) as LinhaPedido
+  it('soma o que falta e ordena pelo mais urgente', () => {
+    const r = aReceber([p('pago', 0), p('parcial', 100), p('fiado_vencido', 50), p('sinal_pendente', 300), p('cancelado', 999), p('a_receber', 20)])
+    expect(r.total).toBe(470)
+    expect(r.sinaisPendentes).toBe(1)
+    expect(r.fiadoVencido).toBe(50)
+    expect(r.lista.map((x) => x.situacao_pagamento)).toEqual(['fiado_vencido', 'sinal_pendente', 'parcial', 'a_receber'])
+  })
+})

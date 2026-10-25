@@ -15,6 +15,19 @@ export function proximaEtapa(s: StatusPedido): StatusPedido | null {
   return i >= 0 && i < ETAPAS.length - 1 ? ETAPAS[i + 1].status : null
 }
 
+export type SituacaoPagamento = 'pago' | 'sinal_pendente' | 'parcial' | 'a_receber' | 'fiado' | 'fiado_vencido' | 'cancelado'
+export const SITUACAO_PAGAMENTO: Record<SituacaoPagamento, { texto: string; classe: string }> = {
+  pago: { texto: 'Pago', classe: 'bg-success-soft text-success' },
+  sinal_pendente: { texto: 'Sinal pendente', classe: 'bg-warning-soft text-warning' },
+  parcial: { texto: 'Pago em parte', classe: 'bg-primary-soft text-primary-strong' },
+  a_receber: { texto: 'A receber', classe: 'bg-muted text-muted-foreground' },
+  fiado: { texto: 'Fiado', classe: 'bg-primary-soft text-primary-strong' },
+  fiado_vencido: { texto: 'Fiado vencido', classe: 'bg-destructive-soft text-destructive' },
+  cancelado: { texto: 'Cancelado', classe: 'bg-muted text-muted-foreground' },
+}
+export type FormaPagamento = 'pix' | 'dinheiro' | 'cartao' | 'boleto'
+export const FORMAS: Record<FormaPagamento, string> = { pix: 'Pix', dinheiro: 'Dinheiro', cartao: 'Cartão', boleto: 'Boleto' }
+
 export type LinhaPedido = {
   id: string
   numero: number
@@ -31,6 +44,10 @@ export type LinhaPedido = {
   quantidade: number
   resumo: string | null
   atrasado: boolean
+  vencimento: string | null
+  pago: number
+  saldo: number
+  situacao_pagamento: SituacaoPagamento
 }
 
 export type Pedido = {
@@ -51,10 +68,12 @@ export type Pedido = {
   sinal_percentual: number | null
   valor_sinal: number
   entregue_em: string | null
+  vencimento: string | null
   created_at: string
   orcamento: { numero: number } | null
-  cliente: { id: string; tipo: 'pf' | 'pj'; nome: string; nome_fantasia: string | null; celular: string | null; telefone: string | null; cidade: string | null; uf: string | null } | null
+  cliente: { id: string; tipo: 'pf' | 'pj'; nome: string; nome_fantasia: string | null; celular: string | null; telefone: string | null; cidade: string | null; uf: string | null; confianca: boolean } | null
   itens: { descricao: string; detalhe: string | null; quantidade: number; preco_unitario: number; adicional: number; item_do_cliente: boolean; ordem: number }[]
+  pagamentos: { id: string; valor: number; forma: FormaPagamento; data: string; observacao: string | null; created_by: string | null }[]
   historico: { id: number; de: string | null; para: StatusPedido; em: string; por: string | null; por_nome: string | null }[]
 }
 
@@ -63,14 +82,14 @@ const msg = (m: string) => (m.includes('Failed to fetch') ? 'Sem conexão com o 
 export async function listarPedidos(): Promise<LinhaPedido[]> {
   const { data, error } = await supabase.from('pedidos_lista').select('*').order('numero', { ascending: false })
   if (error) throw new Error(msg(error.message))
-  return (data as Record<string, unknown>[]).map((p) => ({ ...(p as unknown as LinhaPedido), total: Number(p.total), valor_sinal: Number(p.valor_sinal) }))
+  return (data as Record<string, unknown>[]).map((p) => ({ ...(p as unknown as LinhaPedido), total: Number(p.total), valor_sinal: Number(p.valor_sinal), pago: Number(p.pago), saldo: Number(p.saldo) }))
 }
 
 export async function buscarPedido(id: string): Promise<Pedido | null> {
   const { data, error } = await supabase
     .from('pedidos')
     .select(
-      '*, orcamento:orcamentos(numero), cliente:clientes(id, tipo, nome, nome_fantasia, celular, telefone, cidade, uf), itens:pedido_itens(descricao, detalhe, quantidade, preco_unitario, adicional, item_do_cliente, ordem), historico:pedido_historico(id, de, para, em, por, por_nome)',
+      '*, orcamento:orcamentos(numero), cliente:clientes(id, tipo, nome, nome_fantasia, celular, telefone, cidade, uf, confianca), pagamentos(id, valor, forma, data, observacao, created_by), itens:pedido_itens(descricao, detalhe, quantidade, preco_unitario, adicional, item_do_cliente, ordem), historico:pedido_historico(id, de, para, em, por, por_nome)',
     )
     .eq('id', id)
     .maybeSingle()
@@ -88,6 +107,7 @@ export async function buscarPedido(id: string): Promise<Pedido | null> {
     sinal_percentual: d.sinal_percentual == null ? null : Number(d.sinal_percentual),
     itens: d.itens.map((i) => ({ ...i, preco_unitario: Number(i.preco_unitario), adicional: Number(i.adicional) })).sort((a, b) => a.ordem - b.ordem),
     historico: [...d.historico].sort((a, b) => a.id - b.id),
+    pagamentos: d.pagamentos.map((g) => ({ ...g, valor: Number(g.valor) })).sort((a, b) => a.data.localeCompare(b.data)),
   }
 }
 
@@ -99,6 +119,33 @@ export async function mudarStatusPedido(id: string, status: StatusPedido) {
 export async function atualizarPedido(id: string, campos: Partial<Pick<Pedido, 'prazo_entrega' | 'nota_venda' | 'observacao'>>) {
   const { error } = await supabase.from('pedidos').update(campos).eq('id', id)
   if (error) throw new Error(msg(error.message))
+}
+
+export async function registrarPagamento(pedidoId: string, valor: number, forma: FormaPagamento, data: string, observacao?: string) {
+  const { error } = await supabase.from('pagamentos').insert({ pedido_id: pedidoId, valor, forma, data, observacao: observacao || null })
+  if (error) throw new Error(msg(error.message.replace(/^.*?(Valor maior)/, '$1')))
+}
+
+export async function excluirPagamento(id: string) {
+  const { error } = await supabase.from('pagamentos').delete().eq('id', id)
+  if (error) throw new Error(msg(error.message))
+}
+
+export async function definirVencimento(pedidoId: string, vencimento: string | null) {
+  const { error } = await supabase.from('pedidos').update({ vencimento }).eq('id', pedidoId)
+  if (error) throw new Error(msg(error.message.includes('confiança') ? 'Fiado só para cliente de confiança (marque no cadastro do cliente).' : error.message))
+}
+
+/** Resumo do que falta: quanto e por quê, ordenado pelo mais urgente. */
+export function aReceber(pedidos: LinhaPedido[]) {
+  const ordem: SituacaoPagamento[] = ['fiado_vencido', 'sinal_pendente', 'fiado', 'parcial', 'a_receber']
+  const abertos = pedidos.filter((p) => p.saldo > 0 && ordem.includes(p.situacao_pagamento))
+  return {
+    total: abertos.reduce((s, p) => s + p.saldo, 0),
+    sinaisPendentes: abertos.filter((p) => p.situacao_pagamento === 'sinal_pendente').length,
+    fiadoVencido: abertos.filter((p) => p.situacao_pagamento === 'fiado_vencido').reduce((s, p) => s + p.saldo, 0),
+    lista: [...abertos].sort((a, b) => ordem.indexOf(a.situacao_pagamento) - ordem.indexOf(b.situacao_pagamento) || b.saldo - a.saldo),
+  }
 }
 
 export async function pedidoDoOrcamento(orcamentoId: string): Promise<{ id: string; numero: number } | null> {
