@@ -1,0 +1,1848 @@
+<!doctype html>
+<!-- Gerado por app/scripts/gerar-provador.mjs a partir do index.html da raiz. Não edite aqui. -->
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#121214">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Art's Brindes">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<title>Provador 3D Art's Brindes</title>
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Great+Vibes&family=Dancing+Script:wght@600&family=Allura&family=Satisfy&family=Cinzel:wght@600&family=Playfair+Display:wght@600&family=Bebas+Neue&family=Oswald:wght@500&family=Montserrat:wght@600&family=Righteous&family=Lobster&family=Pacifico&display=swap">
+<style>
+/* Layout: phone = 3D stage on top, controls below; desktop = sticky stage left, controls right. Single dark look = Art's Brindes brand. */
+:root {
+  color-scheme: dark;
+  --bg: #121214;
+  --surface: #1C1C20;
+  --raised: #26262B;
+  --line: #35353C;
+  --fg: #FFFFFF;
+  --fg2: #B4B4BC;
+  --muted: #8E8E97;
+  --accent: #FF6A00;
+  --accent-soft: rgba(255, 106, 0, 0.12);
+  --accent-ink: #121214;
+  --ok: #6FD39A;
+  --warn: #FFB454;
+  --bad: #FF7A6B;
+  --stage-a: #4A4A52;
+  --stage-b: #1E1E22;
+  --font-ui: 'Archivo', 'Helvetica Neue', Arial, sans-serif;
+  --r-lg: 18px;
+  --r-md: 12px;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); color: var(--fg); }
+body { font-family: var(--font-ui); font-size: 15px; line-height: 1.45; padding-inline: 16px; padding-block: 0 32px; }
+button, input { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { max-width: 1200px; margin: 0 auto; padding-block: 18px 14px; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand { font-weight: 900; font-size: 13px; letter-spacing: 1.6px; }
+.brand b { color: var(--accent); font-weight: 900; }
+.top h1 { margin: 4px 0 0; font-size: 28px; line-height: 1.1; font-weight: 800; letter-spacing: -0.5px; text-wrap: balance; }
+.top p { margin: 4px 0 0; color: var(--fg2); font-size: 14px; max-width: 46ch; }
+
+.layout { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; }
+@media (min-width: 900px) {
+  .layout { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); align-items: start; }
+  .stage-wrap { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); }
+}
+
+.stage-wrap { display: flex; flex-direction: column; gap: 10px; }
+.stage { position: relative; height: clamp(340px, 56svh, 620px); border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--line); background: radial-gradient(120% 90% at 50% 38%, var(--stage-a) 0%, var(--stage-b) 70%); touch-action: none; }
+.stage canvas { display: block; width: 100%; height: 100%; }
+.stage .hint { position: absolute; left: 50%; top: 52px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: rgba(18, 18, 20, 0.72); color: var(--fg2); font-size: 13px; pointer-events: none; white-space: nowrap; }
+.stage .tag { position: absolute; left: 12px; top: 12px; padding: 6px 10px; border-radius: 8px; background: rgba(18, 18, 20, 0.72); color: var(--fg2); font-size: 12px; font-weight: 600; letter-spacing: 0.3px; }
+.stage .tag i { font-style: normal; color: var(--accent); }
+.stage .fail { position: absolute; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--fg2); }
+
+.views { display: flex; gap: 8px; flex-wrap: wrap; }
+.views button { flex: 1 1 0; min-width: 72px; height: 44px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); font-weight: 600; font-size: 14px; color: var(--fg2); }
+.views button[aria-pressed="true"] { border-color: var(--accent); color: var(--fg); background: var(--accent-soft); }
+
+.panel { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.group { display: flex; flex-direction: column; gap: 10px; }
+.label { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 12px; font-weight: 700; letter-spacing: 1.6px; color: var(--muted); text-transform: uppercase; }
+.label output, .label span.val { letter-spacing: 0; text-transform: none; font-size: 15px; font-weight: 700; color: var(--fg); font-variant-numeric: tabular-nums; }
+
+.field { height: 52px; width: 100%; padding: 0 14px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); font-size: 17px; font-weight: 500; outline: none; }
+.field:focus { border-color: var(--accent); }
+.field::placeholder { color: #6E6E77; }
+
+.seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.seg button { min-height: 56px; padding: 8px 10px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); text-align: left; display: flex; flex-direction: column; gap: 2px; }
+.seg button strong { font-size: 14px; font-weight: 700; }
+.seg button small { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.seg button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.seg button[aria-pressed="true"] small { color: var(--accent-ink); opacity: 0.75; }
+
+.swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.sw { width: 44px; height: 44px; border-radius: 50%; padding: 0; border: 2px solid transparent; background: transparent; display: grid; place-items: center; }
+.sw span { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #4A4A52; display: block; }
+.sw[aria-pressed="true"] { border-color: var(--accent); }
+.sw.custom { position: relative; overflow: hidden; }
+.sw.custom span { background: conic-gradient(#e44 0 16%, #eb4 0 33%, #4c6 0 50%, #49d 0 66%, #84d 0 83%, #e4a 0); }
+.sw.custom input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+
+.fonts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.fonts button { height: 58px; padding: 0 10px; border-radius: var(--r-md); border: 1px solid var(--line); background: var(--surface); color: var(--fg); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; line-height: 1; }
+.fonts button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 0 0 1px var(--accent); }
+
+input[type=range] { width: 100%; height: 32px; margin: 0; accent-color: var(--accent); }
+
+.specs { padding: 16px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); display: flex; flex-direction: column; gap: 14px; }
+.specs-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 12px; }
+.spec { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.spec span { font-size: 12px; color: var(--muted); }
+.spec strong { font-size: 21px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: -0.3px; }
+.bar { height: 10px; border-radius: 5px; background: var(--raised); overflow: hidden; display: flex; justify-content: center; position: relative; }
+.bar i { display: block; height: 100%; border-radius: 5px; background: var(--ok); transition: width 0.2s; }
+.bar-legend { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+.status { display: flex; gap: 8px; align-items: flex-start; font-size: 14px; font-weight: 600; line-height: 1.4; }
+.status svg { flex: none; margin-top: 1px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; border: 1px solid var(--line); color: var(--fg2); }
+.chip.on { border-color: var(--accent); color: var(--accent); }
+.copy { height: 54px; border-radius: 14px; border: none; background: var(--accent); color: var(--accent-ink); font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.copy-out { width: 100%; min-height: 0; font-size: 13px; padding: 10px; border-radius: 10px; background: var(--raised); border: 1px solid var(--line); color: var(--fg2); resize: none; }
+.foot { font-size: 12.5px; color: var(--muted); line-height: 1.5; max-width: 60ch; }
+
+.stage .quick { position: absolute; left: 10px; right: 10px; bottom: 10px; display: flex; justify-content: space-between; align-items: flex-end; gap: 8px; pointer-events: none; }
+.quick .grp { pointer-events: auto; display: flex; align-items: center; gap: 4px; padding: 4px; border-radius: 14px; background: rgba(18, 18, 20, 0.8); border: 1px solid var(--line); }
+.quick button { width: 44px; height: 44px; border: none; border-radius: 10px; background: var(--raised); color: var(--fg); font-weight: 800; font-size: 16px; display: grid; place-items: center; touch-action: manipulation; user-select: none; -webkit-user-select: none; }
+.quick button:active { background: var(--accent); color: var(--accent-ink); }
+.quick .qsize { display: flex; align-items: center; gap: 2px; padding: 0 2px; font-weight: 700; font-size: 14px; }
+.quick .qsize input { width: 46px; height: 40px; border: 1px solid transparent; border-radius: 8px; background: transparent; color: var(--fg); text-align: right; font: inherit; font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+.quick .qsize input::-webkit-outer-spin-button, .quick .qsize input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.quick .qsize input:focus { border-color: var(--accent); background: var(--surface); outline: none; }
+.quick .qsize span { color: var(--fg2); }
+.quick .lbl { font-size: 11px; font-weight: 700; letter-spacing: 1px; color: var(--muted); padding: 0 4px; }
+.stage .live { position: absolute; right: 12px; top: 12px; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; background: rgba(18, 18, 20, 0.78); font-size: 12px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stage .live i { width: 8px; height: 8px; border-radius: 50%; display: block; background: var(--ok); }
+@media (max-width: 899px) {
+  .stage-wrap { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); margin-inline: -16px; padding: 8px 16px 10px; box-shadow: 0 10px 18px -12px rgba(0, 0, 0, 0.8); }
+  .stage { height: clamp(270px, 46svh, 460px); }
+  .views button { height: 38px; font-size: 13px; }
+}
+.install-help { flex-basis: 100%; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--accent); background: var(--surface); display: flex; flex-direction: column; gap: 8px; }
+.install-help strong { font-size: 15px; }
+.install-help ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; color: var(--fg2); font-size: 14px; line-height: 1.45; }
+.install-help b { color: var(--fg); }
+.install-close { align-self: flex-start; height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--line); background: var(--raised); font-weight: 700; }
+.quick .target { width: auto; padding: 0 10px; font-size: 13px; background: var(--accent); color: var(--accent-ink); }
+@media (max-width: 480px) {
+  .stage .quick { left: 6px; right: 6px; bottom: 6px; gap: 6px; }
+  .quick .grp { gap: 2px; padding: 3px; }
+  .quick button { width: 40px; height: 42px; }
+  .quick .target { width: auto; padding: 0 8px; }
+  .quick .lbl { display: none; }
+  .quick .qsize input { width: 38px; }
+}
+.upload { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 56px; border-radius: var(--r-md); border: 1.5px dashed var(--line); background: var(--surface); font-weight: 700; cursor: pointer; }
+.upload:hover, .upload:focus-within { border-color: var(--accent); }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.logo-box { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding: 12px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line); }
+.logo-box canvas { width: 96px; height: 96px; border-radius: 10px; background: #2a2b30; image-rendering: auto; }
+.logo-ctl { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.row > span { font-size: 13px; color: var(--muted); font-weight: 600; }
+.mini { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--raised); font-weight: 800; font-size: 16px; }
+.numf { display: flex; align-items: center; gap: 4px; font-weight: 700; }
+.numf input { width: 56px; height: 40px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); text-align: center; font-variant-numeric: tabular-nums; }
+.sides { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.sides button { height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--raised); font-size: 12.5px; font-weight: 600; color: var(--fg2); }
+.sides button[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--fg); }
+.check { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; min-height: 40px; }
+.check input { width: 20px; height: 20px; accent-color: var(--accent); }
+.linkbtn { border: none; background: none; color: var(--bad); font-weight: 700; font-size: 14px; min-height: 40px; padding: 0 4px; }
+.small { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.45; }
+.share { padding: 16px; border-radius: var(--r-lg); border: 1px solid var(--accent); background: var(--surface); display: flex; flex-direction: column; gap: 12px; }
+.share p { margin: 0; font-size: 14px; color: var(--fg2); line-height: 1.45; }
+.btn2 { height: 50px; border-radius: 14px; border: 1px solid var(--line); background: var(--raised); font-size: 15px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.btns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.share-msg { font-size: 13.5px; font-weight: 600; color: var(--ok); min-height: 1em; }
+.viewer-card { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); }
+.viewer-card dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 14px; font-size: 14px; }
+.viewer-card dt { color: var(--muted); font-weight: 600; }
+.viewer-card dd { margin: 0; font-weight: 700; overflow-wrap: anywhere; }
+.wa { height: 52px; border-radius: 14px; background: #25D366; color: #0B1F12; font-weight: 800; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none; }
+body.viewer .stage .live, body.viewer .panel, body.viewer .quick, body.viewer #installBtn, body.viewer #installHelp, body.viewer #hint { display: none !important; }
+body.viewer .layout { grid-template-columns: minmax(0, 1fr); max-width: 720px; }
+body.viewer .stage-wrap { position: static; margin-inline: 0; padding: 0; box-shadow: none; }
+body.viewer .stage { height: clamp(360px, 62svh, 640px); }
+.dims { display: grid; gap: 6px; }
+.dims-head, .dims-row { display: grid; grid-template-columns: 54px repeat(3, minmax(0, 1fr)); gap: 6px; align-items: center; }
+.dims-head span { font-size: 11.5px; font-weight: 700; letter-spacing: 0.4px; color: var(--muted); text-align: center; }
+.dims-row strong { font-size: 13.5px; }
+.dims-row input { width: 100%; min-width: 0; height: 46px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); text-align: center; font-weight: 700; font-size: 16px; font-variant-numeric: tabular-nums; }
+.dims-row input::placeholder { color: #75757E; font-weight: 600; font-size: 13px; }
+.dims-row input:focus { border-color: var(--accent); outline: none; }
+.order-actions { display: flex; flex-direction: column; gap: 8px; }
+.order-actions .copy { width: 100%; }
+.editing-note { font-size: 13.5px; font-weight: 700; color: var(--warn); }
+.order { display: flex; flex-direction: column; gap: 10px; }
+.items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.item { display: grid; grid-template-columns: 72px minmax(0, 1fr); gap: 12px; padding: 10px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line); }
+.item.editing { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.item img { width: 72px; height: 90px; object-fit: cover; border-radius: 8px; background: #2a2a30; }
+.item .info { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.item strong { font-size: 14.5px; }
+.item .desc { font-size: 13px; color: var(--fg2); overflow-wrap: anywhere; }
+.item .iq { display: flex; gap: 8px; flex-wrap: wrap; }
+.item .iq label { display: flex; align-items: center; gap: 4px; font-size: 12.5px; font-weight: 700; color: var(--muted); }
+.item .iq input { width: 74px; height: 36px; border-radius: 8px; border: 1px solid var(--line); background: var(--bg); text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.item .iq input.q { width: 48px; }
+.item .ia { display: flex; gap: 6px; flex-wrap: wrap; }
+.item .ia button { height: 34px; padding: 0 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--raised); font-size: 12.5px; font-weight: 700; }
+.item .ia button.del { color: var(--bad); }
+.order-total { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 14px; border-radius: var(--r-md); background: var(--surface); border: 1px solid var(--line); font-weight: 800; font-variant-numeric: tabular-nums; }
+.item-nav { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.item-nav button { width: 52px; height: 46px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-size: 22px; font-weight: 800; }
+.item-nav button:disabled { opacity: 0.35; }
+.item-nav span { font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; }
+.vorder { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.vorder button { width: 100%; display: flex; justify-content: space-between; gap: 10px; text-align: left; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font-size: 13.5px; }
+.vorder button[aria-current="true"] { border-color: var(--accent); }
+.vorder b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.proj { display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: var(--r-lg); background: var(--surface); border: 1px solid var(--line); }
+.proj-row { display: flex; gap: 8px; }
+.proj-row .field { flex: 1; min-width: 0; height: 48px; font-size: 16px; background: var(--bg); }
+.proj-row .btn2 { height: 48px; padding: 0 16px; }
+.proj-row .btn2.main { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.proj-status { font-size: 13px; color: var(--muted); }
+.proj details summary { cursor: pointer; font-weight: 700; font-size: 14px; min-height: 40px; display: flex; align-items: center; }
+.proj-list { list-style: none; margin: 6px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.proj-list li { display: flex; align-items: center; gap: 8px; padding: 8px 8px 8px 12px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); }
+.proj-list li.cur { border-color: var(--accent); }
+.proj-list .pn { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.proj-list .pn b { font-size: 14px; overflow-wrap: anywhere; }
+.proj-list .pn small { font-size: 12px; color: var(--muted); }
+.proj-list button { height: 38px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--raised); font-weight: 700; font-size: 13px; }
+.proj-list button.del { color: var(--bad); }
+.install { height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 800; font-size: 14px; }
+@media (prefers-reduced-motion: reduce) { .bar i { transition: none; } }
+/* ---- dentro do sistema de gestão ---- */
+body.embed #installBtn, body.embed #installHelp, body.embed .foot { display: none !important; }
+body.embed .top { display: none !important; }
+body.embed-editar .proj, body.embed-editar .order-actions, body.embed-editar .order, body.embed-editar .share { display: none !important; }
+body.embed-editar { padding-bottom: 84px; }
+body.embed-ver .viewer-card, body.embed-ver .views { display: none !important; }
+body.embed-ver { padding: 0 !important; overflow: hidden; }
+body.embed-ver .layout { max-width: none; padding: 0; margin: 0; }
+body.embed-ver .stage-wrap { margin: 0; padding: 0; }
+body.embed-ver .stage { height: 100svh !important; border-radius: 0; }
+.embed-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; display: flex; gap: 10px; padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); background: var(--surface); border-top: 1px solid var(--line); }
+.embed-bar button { flex: 1; height: 48px; border-radius: 12px; font-weight: 800; font-size: 15px; border: 1px solid var(--line); background: var(--raised); color: var(--fg); }
+.embed-bar button.main { flex: 2; background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+</style>
+
+</head>
+<body>
+<header class="top">
+  <div>
+    <div class="brand">ART'S <b>BRINDES</b></div>
+    <h1>Provador 3D</h1>
+    <p>Escolha o produto e a cor, digite o texto e gire a peça para ver a gravação.</p>
+  </div>
+  <button type="button" id="installBtn" class="install">Instalar app</button>
+  <div class="install-help" id="installHelp" hidden>
+    <strong id="installTitle">Como instalar</strong>
+    <ol id="installSteps"></ol>
+    <button type="button" id="installClose" class="install-close">Entendi</button>
+  </div>
+</header>
+
+<main class="layout">
+  <section class="stage-wrap" aria-label="Visualização 3D">
+    <div class="stage" id="stage">
+      <div class="tag" id="engraveTag">Laser revela o <i>inox</i></div>
+      <div class="hint" id="hint">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.35-5.65"/><path d="M20 4v4h-4"/></svg>
+        Arraste para girar · pinça para zoom
+      </div>
+      <div class="live" aria-live="polite"><i id="liveDot"></i><span id="liveTxt">–</span></div>
+      <div class="quick">
+        <div class="grp" role="group" aria-label="Tamanho">
+          <button type="button" id="qTarget" class="target" hidden aria-label="Trocar entre ajustar o texto e a logo">Texto</button>
+          <button type="button" id="qSizeDown" aria-label="Diminuir a letra">A−</button>
+          <label class="qsize"><input id="qSize" type="number" inputmode="decimal" min="3" max="40" step="0.5" value="10" aria-label="Altura da letra em milímetros"><span>mm</span></label>
+          <button type="button" id="qSizeUp" aria-label="Aumentar a letra">A+</button>
+        </div>
+        <div class="grp" role="group" aria-label="Posição do texto">
+          <span class="lbl">ALTURA</span>
+          <button type="button" id="qDown" aria-label="Descer o texto"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+          <button type="button" id="qUp" aria-label="Subir o texto"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
+        </div>
+      </div>
+    </div>
+    <div class="item-nav" id="itemNav" hidden>
+      <button type="button" id="prevItem" aria-label="Item anterior">‹</button>
+      <span id="itemPos">Item 1 de 1</span>
+      <button type="button" id="nextItem" aria-label="Próximo item">›</button>
+    </div>
+    <div class="views" role="group" aria-label="Posição da peça">
+      <button type="button" id="vFront" aria-pressed="true">Frente</button>
+      <button type="button" id="vSide" aria-pressed="false">Lado</button>
+      <button type="button" id="vBack" aria-pressed="false">Costas</button>
+      <button type="button" id="vSpin" aria-pressed="false">Girar</button>
+    </div>
+    <div class="viewer-card" id="viewerCard" hidden>
+      <dl id="viewerList"></dl>
+      <div id="viewerOrderWrap" hidden>
+        <div class="label" style="margin-bottom:8px">Pedido completo</div>
+        <ol class="vorder" id="viewerOrder"></ol>
+        <div class="order-total" id="viewerTotal" style="margin-top:8px" hidden></div>
+      </div>
+      <p class="small">Prévia ilustrativa feita pela Art's Brindes. Tamanho e posição são conferidos antes da gravação.</p>
+      <a class="wa" id="waApprove" href="#" target="_blank" rel="noopener" hidden>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.8 11.9 11.9 0 0 0 4.6 4c1.7.7 2.4.8 3.2.7.5-.1 1.5-.6 1.8-1.2.2-.6.2-1.1.1-1.2l-.4-.2z"/></svg>
+        Aprovar pelo WhatsApp
+      </a>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Opções">
+    <div class="proj">
+      <label class="label" for="projName">Projeto</label>
+      <div class="proj-row">
+        <input class="field" id="projName" type="text" maxlength="60" placeholder="Ex.: SOS Extintores, Pedido da Maria">
+        <button type="button" class="btn2 main" id="projSave">Salvar</button>
+      </div>
+      <div class="proj-row">
+        <button type="button" class="btn2" id="projNew" style="flex:1">Novo projeto</button>
+      </div>
+      <div class="proj-status" id="projStatus" aria-live="polite">Salvamento automático ligado neste aparelho.</div>
+      <details id="projDetails" hidden>
+        <summary id="projSummary">Projetos salvos</summary>
+        <ol class="proj-list" id="projList"></ol>
+      </details>
+    </div>
+
+    <div class="group">
+      <label class="label" for="line1">Texto</label>
+      <input class="field" id="line1" type="text" maxlength="60" value="Maria Eduarda" placeholder="Nome, frase, empresa">
+      <label class="label" for="line2">Segunda linha <span class="val" style="color:var(--muted);font-weight:500;font-size:13px">opcional</span></label>
+      <input class="field" id="line2" type="text" maxlength="60" value="" placeholder="Ex.: data, cargo, 15 anos">
+    </div>
+
+    <div class="group">
+      <div class="label">Logo ou desenho <span class="val" style="color:var(--muted);font-weight:500;font-size:13px">opcional</span></div>
+      <label class="upload" id="uploadLbl">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        <span id="uploadTxt">Importar logo (PNG, JPG ou SVG)</span>
+        <input type="file" id="logoFile" class="sr-only" accept="image/png,image/jpeg,image/svg+xml,image/webp">
+      </label>
+      <div class="logo-box" id="logoBox" hidden>
+        <canvas id="logoPreview" width="192" height="192" aria-label="Prévia da logo como gravação"></canvas>
+        <div class="logo-ctl">
+          <div class="sides" id="logoSides" role="group" aria-label="Lado da logo">
+            <button type="button" data-a="0" aria-pressed="true">Frente</button>
+            <button type="button" data-a="90" aria-pressed="false">Direita</button>
+            <button type="button" data-a="180" aria-pressed="false">Costas</button>
+            <button type="button" data-a="-90" aria-pressed="false">Esquerda</button>
+          </div>
+          <div class="row" style="justify-content:space-between">
+            <label class="check"><input type="checkbox" id="logoInvert"> Inverter</label>
+            <button type="button" class="linkbtn" id="logoRemove">Remover logo</button>
+          </div>
+        </div>
+      </div>
+      <p class="small">A logo vira gravação de uma cor só, como no laser. Funciona melhor PNG com fundo transparente. Se a parte errada ficar gravada, marque Inverter.</p>
+    </div>
+
+    <div class="group">
+      <div class="label">Medidas da gravação <span class="val" style="color:var(--muted);font-weight:500;font-size:13px">em mm</span></div>
+      <div class="dims">
+        <div class="dims-head" aria-hidden="true"><span></span><span>Largura</span><span>Altura</span><span>Centro*</span></div>
+        <div class="dims-row">
+          <strong>Nome</strong>
+          <input id="dTW" type="text" inputmode="decimal" placeholder="auto" aria-label="Largura do nome em mm (vazio = automático)">
+          <input id="dTH" type="text" inputmode="decimal" aria-label="Altura da letra em mm">
+          <input id="dTY" type="text" inputmode="decimal" aria-label="Centro do nome, em mm a partir da base">
+        </div>
+        <div class="dims-row" id="dimLogo" hidden>
+          <strong>Logo</strong>
+          <input id="dLW" type="text" inputmode="decimal" aria-label="Largura da logo em mm">
+          <input id="dLH" type="text" inputmode="decimal" aria-label="Altura da logo em mm">
+          <input id="dLY" type="text" inputmode="decimal" aria-label="Centro da logo, em mm a partir da base">
+        </div>
+      </div>
+      <div class="row">
+        <label class="check"><input type="checkbox" id="tLock"> Nome: manter proporção</label>
+        <label class="check" id="lLockWrap" hidden><input type="checkbox" id="lLock"> Logo: manter proporção</label>
+      </div>
+      <p class="small">*Centro: a quantos mm da base da peça fica o meio da gravação. Largura do nome vazia = tamanho natural da fonte. Sem "manter proporção", cada medida fica exatamente como você digitar.</p>
+    </div>
+
+    <div class="group">
+      <div class="label">Produto</div>
+      <div class="seg" id="products" role="group" aria-label="Produto"></div>
+    </div>
+
+    <div class="group">
+      <div class="label">Cor <span class="val" id="colorName">Preto</span></div>
+      <div class="swatches" id="swatches" role="group" aria-label="Cor do produto"></div>
+    </div>
+
+    <div class="group">
+      <div class="label">Fonte <span class="val" id="fontName">Great Vibes</span></div>
+      <div class="fonts" id="fonts" role="group" aria-label="Fonte"></div>
+    </div>
+
+    <div class="group" hidden>
+      <label class="label" for="hSlider">Altura da letra <output id="hOut" for="hSlider">10 mm</output></label>
+      <input id="hSlider" type="range" min="3" max="40" step="0.5" value="10">
+      <label class="label" for="vSlider">Posição na altura <output id="vOut" for="vSlider">meio</output></label>
+      <input id="vSlider" type="range" min="10" max="90" step="1" value="50">
+    </div>
+
+    <div class="order-actions">
+      <div class="editing-note" id="editingNote" hidden></div>
+      <button type="button" class="copy" id="addItemBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span id="addItemLabel">Adicionar ao pedido</span>
+      </button>
+      <button type="button" class="linkbtn" id="cancelEdit" hidden style="color:var(--fg2)">Cancelar edição</button>
+    </div>
+
+    <div class="order" id="orderBox" hidden>
+      <div class="label">Pedido <span class="val" id="orderCount"></span></div>
+      <ol class="items" id="orderList"></ol>
+      <div class="order-total" id="orderTotal" hidden></div>
+      <button type="button" class="linkbtn" id="clearOrder" style="align-self:flex-start">Limpar pedido</button>
+    </div>
+
+    <div class="specs" aria-live="polite">
+      <div class="label">Medidas para o EzCad</div>
+      <div class="specs-grid">
+        <div class="spec"><span>Comprimento do texto</span><strong id="sLen">–</strong></div>
+        <div class="spec"><span>Altura do bloco</span><strong id="sH">–</strong></div>
+        <div class="spec"><span>Diâmetro no ponto</span><strong id="sD">–</strong></div>
+        <div class="spec"><span>Volta ocupada</span><strong id="sDeg">–</strong></div>
+      </div>
+      <div class="group" style="gap:6px">
+        <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+        <div class="bar-legend"><span>costas</span><span>frente</span><span>costas</span></div>
+      </div>
+      <div class="status" id="status"></div>
+      <div class="chips" id="chips"></div>
+      <button type="button" class="copy" id="copyBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>
+        <span id="copyLabel">Copiar medidas</span>
+      </button>
+      <textarea class="copy-out" id="copyOut" rows="5" readonly hidden aria-label="Medidas para copiar"></textarea>
+    </div>
+
+    <div class="share">
+      <div class="label">Enviar para o cliente</div>
+      <p id="shareInfo">Gera um link com o produto, a cor, o texto e a logo. O cliente abre no celular, gira a peça e vê como vai ficar, mas não consegue mudar nada.</p>
+      <button type="button" class="copy" id="shareBtn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+        <span>Enviar link da prévia</span>
+      </button>
+      <div class="btns">
+        <button type="button" class="btn2" id="copyLinkBtn">Copiar link</button>
+        <button type="button" class="btn2" id="imgBtn">Salvar imagem</button>
+      </div>
+      <div class="share-msg" id="shareMsg" aria-live="polite"></div>
+      <textarea class="copy-out" id="shareOut" rows="3" readonly hidden aria-label="Link da prévia"></textarea>
+    </div>
+
+    <p class="foot">As medidas dos produtos são de exemplo e precisam ser trocadas pelas reais. As fontes também são de exemplo: depois entram as da sua máquina. A altura da letra é o tamanho da fonte, o mesmo valor do campo de altura no EzCad.</p>
+  </section>
+</main>
+
+<div class="embed-bar" id="embedBar" hidden>
+  <button type="button" id="embedCancel">Cancelar</button>
+  <button type="button" class="main" id="embedSave">Salvar mockup</button>
+</div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+/* ---------- modo dentro do sistema ---------- */
+const QS = new URLSearchParams(location.search);
+const EMBED = QS.get('embed') === '1';
+const MODO = QS.get('modo') === 'ver' ? 'ver' : 'editar';
+if (EMBED) document.body.classList.add('embed', 'embed-' + MODO);
+
+/* ---------- dados (exemplo) ---------- */
+const FONTS = [
+  { name: 'Great Vibes', fam: "'Great Vibes'", wt: 400, chip: 26 },
+  { name: 'Dancing Script', fam: "'Dancing Script'", wt: 600, chip: 22 },
+  { name: 'Allura', fam: "'Allura'", wt: 400, chip: 27 },
+  { name: 'Satisfy', fam: "'Satisfy'", wt: 400, chip: 21 },
+  { name: 'Cinzel', fam: "'Cinzel'", wt: 600, chip: 16 },
+  { name: 'Playfair Display', fam: "'Playfair Display'", wt: 600, chip: 17 },
+  { name: 'Bebas Neue', fam: "'Bebas Neue'", wt: 400, chip: 24 },
+  { name: 'Oswald', fam: "'Oswald'", wt: 500, chip: 19 },
+  { name: 'Montserrat', fam: "'Montserrat'", wt: 600, chip: 15 },
+  { name: 'Righteous', fam: "'Righteous'", wt: 400, chip: 18 },
+  { name: 'Lobster', fam: "'Lobster'", wt: 400, chip: 20 },
+  { name: 'Pacifico', fam: "'Pacifico'", wt: 400, chip: 18 }
+];
+const COLORS = [
+  { name: 'Preto', hex: '#1C1C1E' },
+  { name: 'Grafite', hex: '#4E5054' },
+  { name: 'Verde Militar', hex: '#3F4E33' },
+  { name: 'Azul Marinho', hex: '#1F3657' },
+  { name: 'Vinho', hex: '#6A2130' },
+  { name: 'Rosa', hex: '#D49AAE' },
+  { name: 'Bege', hex: '#CDBFA4' },
+  { name: 'Branco', hex: '#EDEDEB' },
+  { name: 'Inox', hex: '#C3C6CB', inox: true }
+];
+const PRODUCTS = [
+  { id: 'copo', label: 'Copo Stanley 473 ml', sub: 'Ø 72–86 mm · medido' },
+  { id: 'caneca', label: 'Caneca Stanley 709 ml', sub: 'Ø 86 mm · medido' },
+  { id: 'garrafa', label: 'Garrafa 1 L', sub: 'Ø 92 mm' },
+  { id: 'slim', label: 'Garrafa 500 ml', sub: 'Ø 70 mm' }
+];
+
+const state = { product: 'copo', color: COLORS[0], font: 0, line1: 'Maria Eduarda', line2: '', h: 10, vpos: 50, spin: false,
+  logo: null, logoW: 40, logoH: 25, logoV: 50, logoA: 0, logoInv: false, target: 'text', textW: null, tLock: false, lLock: false };
+// Número do WhatsApp da loja para o botão de aprovação do cliente (só dígitos, com DDI e DDD). Vazio = botão escondido.
+const WHATSAPP = '';
+
+/* ---------- UI ---------- */
+const $ = (id) => document.getElementById(id);
+function pressGroup(container, btn) {
+  container.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
+}
+
+const prodBox = $('products');
+PRODUCTS.forEach((p) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.setAttribute('aria-pressed', p.id === state.product ? 'true' : 'false');
+  b.innerHTML = '<strong></strong><small></small>';
+  b.querySelector('strong').textContent = p.label;
+  b.querySelector('small').textContent = p.sub;
+  b.addEventListener('click', () => { state.product = p.id; pressGroup(prodBox, b); buildProduct(); });
+  prodBox.appendChild(b);
+});
+
+const swBox = $('swatches');
+COLORS.forEach((c, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'sw';
+  b.setAttribute('aria-label', c.name);
+  b.setAttribute('aria-pressed', i === 0 ? 'true' : 'false');
+  const s = document.createElement('span');
+  s.style.background = c.inox ? 'linear-gradient(135deg,#e6e8eb,#9a9ea5 55%,#d9dbde)' : c.hex;
+  b.appendChild(s);
+  b.addEventListener('click', () => { state.color = c; pressGroup(swBox, b); applyColor(); });
+  swBox.appendChild(b);
+});
+{
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.className = 'sw custom';
+  b.setAttribute('aria-label', 'Outra cor');
+  b.setAttribute('aria-pressed', 'false');
+  b.innerHTML = '<span></span>';
+  const inp = document.createElement('input');
+  inp.type = 'color';
+  inp.id = 'customColor';
+  inp.value = '#FF6A00';
+  inp.setAttribute('aria-label', 'Escolher outra cor');
+  inp.addEventListener('input', () => { state.color = { name: 'Personalizada', hex: inp.value }; pressGroup(swBox, b); applyColor(); });
+  b.appendChild(inp);
+  swBox.appendChild(b);
+}
+
+const fontBox = $('fonts');
+FONTS.forEach((f, i) => {
+  const b = document.createElement('button');
+  b.type = 'button';
+  b.textContent = f.name;
+  b.style.fontFamily = f.fam + ', cursive';
+  b.style.fontWeight = f.wt;
+  b.style.fontSize = f.chip + 'px';
+  b.setAttribute('aria-pressed', i === state.font ? 'true' : 'false');
+  b.addEventListener('click', () => { state.font = i; pressGroup(fontBox, b); $('fontName').textContent = f.name; loadFontThenDraw(); });
+  fontBox.appendChild(b);
+});
+
+$('line1').addEventListener('input', (e) => { state.line1 = e.target.value; drawText(); });
+$('line2').addEventListener('input', (e) => { state.line2 = e.target.value; drawText(); });
+$('hSlider').addEventListener('input', (e) => { state.h = Number(e.target.value); drawText(); });
+$('vSlider').addEventListener('input', (e) => { state.vpos = Number(e.target.value); drawText(); });
+function holdRepeat(btn, step) {
+  let t = null, r = null;
+  const stop = () => { clearTimeout(t); clearInterval(r); t = r = null; };
+  btn.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    step();
+    t = setTimeout(() => { r = setInterval(step, 70); }, 380);
+  });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach((ev) => btn.addEventListener(ev, stop));
+  btn.addEventListener('click', (e) => { if (e.detail === 0) step(); });
+  btn.addEventListener('contextmenu', (e) => e.preventDefault());
+}
+function setH(v) {
+  const max = Number($('hSlider').max);
+  state.h = Math.min(max, Math.max(3, Math.round(v * 2) / 2));
+  $('hSlider').value = state.h;
+  drawText();
+}
+function setV(v) {
+  state.vpos = Math.min(90, Math.max(10, Math.round(v)));
+  $('vSlider').value = state.vpos;
+  drawText();
+}
+$('qSize').addEventListener('change', (e) => { const v = num(e.target.value); if (!isNaN(v)) { if (isLogo()) setLW(v); else setH(v); } });
+$('qSize').addEventListener('keydown', (e) => { if (e.key === 'Enter') e.target.blur(); });
+const isLogo = () => state.target === 'logo' && state.logo;
+holdRepeat($('qSizeDown'), () => (isLogo() ? setLW(state.logoW - 1) : setH(state.h - 0.5)));
+holdRepeat($('qSizeUp'), () => (isLogo() ? setLW(state.logoW + 1) : setH(state.h + 0.5)));
+holdRepeat($('qDown'), () => (isLogo() ? setLV(state.logoV - 1.5) : setV(state.vpos - 1.5)));
+holdRepeat($('qUp'), () => (isLogo() ? setLV(state.logoV + 1.5) : setV(state.vpos + 1.5)));
+$('qTarget').addEventListener('click', () => {
+  state.target = state.target === 'logo' ? 'text' : 'logo';
+  refreshTarget();
+  drawText();
+});
+function refreshTarget() {
+  const logo = isLogo();
+  $('qTarget').hidden = !state.logo;
+  $('qTarget').textContent = logo ? 'Logo' : 'Texto';
+  $('qSizeDown').textContent = logo ? '−' : 'A−';
+  $('qSizeUp').textContent = logo ? '+' : 'A+';
+  $('qSize').step = logo ? '1' : '0.5';
+  $('qSize').setAttribute('aria-label', logo ? 'Largura da logo em milímetros' : 'Altura da letra em milímetros');
+}
+/* ---------- logo ---------- */
+const maxLogoW = () => (band ? Math.floor(2 * Math.PI * band.rAt(band.y0 + band.bandH / 2) - (band.handleGap || 0)) : 200);
+function clampLogo() {
+  state.logoW = Math.max(3, Math.min(state.logoW, maxLogoW()));
+  if (band) state.logoH = Math.max(3, Math.min(state.logoH, band.bandH));
+}
+// botões rápidos: aumenta ou diminui mantendo o formato atual
+function setLW(v) {
+  const k = Math.max(3, v) / state.logoW;
+  state.logoW = Math.round(state.logoW * k * 10) / 10;
+  state.logoH = Math.round(state.logoH * k * 10) / 10;
+  clampLogo();
+  drawText();
+}
+function setLV(v) { state.logoV = Math.min(98, Math.max(2, v)); drawText(); }
+function num(v) { const n = parseFloat(String(v).trim().replace(',', '.')); return isNaN(n) ? NaN : n; }
+const pctFromY = (y) => (band ? Math.min(98, Math.max(2, (y - band.y0) / band.bandH * 100)) : 50);
+let lastNaturalW = 0, lastTextW = 0;
+function onDim(id, fn) {
+  const el = $(id);
+  el.addEventListener('change', () => { fn(num(el.value), el.value.trim() === ''); el.blur(); drawText(); });
+  el.addEventListener('keydown', (e) => { if (e.key === 'Enter') el.blur(); });
+  el.addEventListener('focus', () => el.select());
+}
+onDim('dTW', (v, empty) => {
+  if (empty) { state.textW = null; return; }
+  if (isNaN(v) || v <= 0) return;
+  v = Math.min(v, maxLogoW());
+  if (state.tLock && lastTextW) { const k = v / lastTextW; state.h = Math.max(1, state.h * k); if (state.textW) state.textW = v; }
+  else state.textW = v;
+});
+onDim('dTH', (v) => {
+  if (isNaN(v) || v <= 0) return;
+  v = Math.min(v, band ? band.bandH : 40);
+  if (state.tLock && state.textW) state.textW = state.textW * v / state.h;
+  state.h = v; $('hSlider').value = Math.min(v, Number($('hSlider').max));
+});
+onDim('dTY', (v) => { if (!isNaN(v)) { state.vpos = pctFromY(v); $('vSlider').value = state.vpos; } });
+onDim('dLW', (v) => {
+  if (isNaN(v) || v <= 0) return;
+  if (state.lLock) state.logoH = state.logoH * v / state.logoW;
+  state.logoW = v; clampLogo();
+});
+onDim('dLH', (v) => {
+  if (isNaN(v) || v <= 0) return;
+  if (state.lLock) state.logoW = state.logoW * v / state.logoH;
+  state.logoH = v; clampLogo();
+});
+onDim('dLY', (v) => { if (!isNaN(v)) state.logoV = pctFromY(v); });
+$('tLock').addEventListener('change', (e) => { state.tLock = e.target.checked; });
+$('lLock').addEventListener('change', (e) => { state.lLock = e.target.checked; });
+$('logoSides').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+  state.logoA = Number(b.dataset.a);
+  pressGroup($('logoSides'), b);
+  drawText();
+  setView(state.logoA === -90 ? -90 : state.logoA);
+}));
+$('logoInvert').addEventListener('change', (e) => { state.logoInv = e.target.checked; rebuildLogoCanvas(); drawText(); });
+$('logoRemove').addEventListener('click', () => {
+  state.logo = null; state.target = 'text'; logoCanvas = null;
+  $('logoBox').hidden = true; $('dimLogo').hidden = true; $('lLockWrap').hidden = true; $('logoFile').value = ''; $('uploadTxt').textContent = 'Importar logo (PNG, JPG ou SVG)';
+  refreshTarget(); drawText();
+});
+$('logoFile').addEventListener('change', async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  $('uploadTxt').textContent = 'Lendo ' + file.name + '…';
+  try {
+    const img = await fileToImage(file);
+    state.logo = maskFromImage(img);
+    state.logoInv = false; $('logoInvert').checked = false;
+    rebuildLogoCanvas();
+    $('logoBox').hidden = false;
+    $('uploadTxt').textContent = 'Trocar logo';
+    state.target = 'logo';
+    state.logoH = Math.round(state.logoW * state.logo.h / state.logo.w * 10) / 10;
+    clampLogo();
+    $('dimLogo').hidden = false; $('lLockWrap').hidden = false;
+    refreshTarget();
+    drawText();
+    // posiciona a logo acima do texto, sem sobrepor
+    const hasText = [state.line1, state.line2].some((t) => t.trim());
+    if (band && hasText) {
+      const lh = state.logoH;
+      const nLines = [state.line1, state.line2].filter((t) => t.trim()).length;
+      const textH = state.h + (nLines - 1) * state.h * 1.25;
+      const total = lh + 6 + textH;
+      const mid = band.bandH / 2;
+      const bottomText = Math.max(4, mid - total / 2);
+      state.vpos = Math.min(90, Math.max(10, (bottomText + textH / 2) / band.bandH * 100));
+      state.logoV = Math.min(90, Math.max(10, (bottomText + textH + 6 + lh / 2) / band.bandH * 100));
+      $('vSlider').value = state.vpos;
+      drawText();
+    }
+  } catch (err) {
+    $('uploadTxt').textContent = 'Não consegui abrir esse arquivo. Tente PNG ou JPG.';
+  }
+});
+function fileToImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { resolve(img); setTimeout(() => URL.revokeObjectURL(url), 1000); };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+// Transforma a imagem em máscara de 1 bit (gravado / não gravado), recortada no desenho.
+function maskFromImage(img) {
+  let w = img.naturalWidth || 600, h = img.naturalHeight || 600;
+  const k = Math.min(1, 700 / Math.max(w, h));
+  w = Math.max(1, Math.round(w * k)); h = Math.max(1, Math.round(h * k));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  x.drawImage(img, 0, 0, w, h);
+  const d = x.getImageData(0, 0, w, h).data;
+  let transp = 0;
+  for (let i = 3; i < d.length; i += 4) if (d[i] < 200) transp++;
+  const useAlpha = transp > w * h * 0.02;
+  const bits = new Uint8Array(w * h);
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) for (let xx = 0; xx < w; xx++) {
+    const i = (y * w + xx) * 4;
+    const lum = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+    const on = useAlpha ? d[i + 3] > 128 : (d[i + 3] > 128 && lum < 140);
+    if (on) { bits[y * w + xx] = 1; if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  if (x1 < 0) return { w, h, bits };
+  const tw = x1 - x0 + 1, th = y1 - y0 + 1, tb = new Uint8Array(tw * th);
+  for (let y = 0; y < th; y++) tb.set(bits.subarray((y + y0) * w + x0, (y + y0) * w + x0 + tw), y * tw);
+  return { w: tw, h: th, bits: tb };
+}
+let logoCanvas = null;
+let logoTint = { color: '', canvas: null };
+function rebuildLogoCanvas() {
+  logoTint.color = '';
+  if (!state.logo) { logoCanvas = null; return; }
+  const { w, h, bits } = state.logo;
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const x = c.getContext('2d');
+  const im = x.createImageData(w, h);
+  for (let i = 0; i < bits.length; i++) {
+    const on = state.logoInv ? !bits[i] : bits[i];
+    if (on) { im.data[i * 4] = im.data[i * 4 + 1] = im.data[i * 4 + 2] = 255; im.data[i * 4 + 3] = 255; }
+  }
+  x.putImageData(im, 0, 0);
+  logoCanvas = c;
+  // prévia no painel
+  const pv = $('logoPreview'), px = pv.getContext('2d');
+  px.clearRect(0, 0, pv.width, pv.height);
+  const s = Math.min((pv.width - 20) / w, (pv.height - 20) / h);
+  px.drawImage(tinted('#E6E8EC'), (pv.width - w * s) / 2, (pv.height - h * s) / 2, w * s, h * s);
+}
+function tinted(color) {
+  if (logoTint.color === color && logoTint.canvas) return logoTint.canvas;
+  const c = document.createElement('canvas'); c.width = logoCanvas.width; c.height = logoCanvas.height;
+  const x = c.getContext('2d');
+  x.drawImage(logoCanvas, 0, 0);
+  x.globalCompositeOperation = 'source-in';
+  x.fillStyle = color; x.fillRect(0, 0, c.width, c.height);
+  logoTint = { color, canvas: c };
+  return c;
+}
+
+/* ---------- 3D ---------- */
+const stage = $('stage');
+let renderer;
+try {
+  renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+} catch (err) {
+  stage.insertAdjacentHTML('beforeend', '<div class="fail">Este aparelho não conseguiu abrir o 3D. Tente atualizar o navegador.</div>');
+  throw err;
+}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.35;
+stage.prepend(renderer.domElement);
+
+const scene = new THREE.Scene();
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+
+const key = new THREE.DirectionalLight(0xffffff, 2.2);
+key.position.set(220, 320, 260);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0xffe2cc, 1.4);
+rim.position.set(-260, 120, -200);
+scene.add(rim);
+const top = new THREE.DirectionalLight(0xffffff, 1.2);
+top.position.set(-60, 400, 120);
+scene.add(top);
+const fill = new THREE.HemisphereLight(0xdfe4ea, 0x3a3a40, 1.0);
+scene.add(fill);
+
+const camera = new THREE.PerspectiveCamera(28, 1, 1, 5000);
+scene.add(camera);
+camera.add(key);
+key.position.set(140, 200, 80);
+camera.add(rim);
+rim.position.set(-260, 160, -900);
+const fillCam = new THREE.DirectionalLight(0xffffff, 0.9);
+camera.add(fillCam);
+fillCam.position.set(-180, -40, 60);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enablePan = false;
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minPolarAngle = Math.PI * 0.18;
+controls.maxPolarAngle = Math.PI * 0.62;
+controls.autoRotateSpeed = 2.2;
+controls.addEventListener('start', () => { $('hint').hidden = true; markView(null); });
+
+/* materiais */
+const bodyMat = new THREE.MeshStandardMaterial({ color: 0x1c1c1e, metalness: 0.1, roughness: 0.62, envMapIntensity: 0.25 });
+{
+  const nc = document.createElement('canvas');
+  nc.width = nc.height = 256;
+  const nx = nc.getContext('2d');
+  const img = nx.createImageData(256, 256);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = 110 + Math.random() * 60;
+    img.data[i] = img.data[i + 1] = img.data[i + 2] = v; img.data[i + 3] = 255;
+  }
+  nx.putImageData(img, 0, 0);
+  const noise = new THREE.CanvasTexture(nc);
+  noise.wrapS = noise.wrapT = THREE.RepeatWrapping;
+  noise.repeat.set(14, 8);
+  bodyMat.bumpMap = noise;
+  bodyMat.bumpScale = 0.35;
+}
+const steelMat = new THREE.MeshStandardMaterial({ color: 0xc9ccd1, metalness: 1, roughness: 0.28, side: THREE.DoubleSide });
+const lidMat = new THREE.MeshStandardMaterial({ color: 0x17171a, metalness: 0.1, roughness: 0.45 });
+const engraveCanvas = document.createElement('canvas');
+const engraveTex = new THREE.CanvasTexture(engraveCanvas);
+engraveTex.colorSpace = THREE.SRGBColorSpace;
+engraveTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+const engraveMat = new THREE.MeshStandardMaterial({ map: engraveTex, transparent: true, alphaTest: 0.04, metalness: 0.9, roughness: 0.3, polygonOffset: true, polygonOffsetFactor: -2 });
+
+let productGroup = null;
+let band = null; // { y0, y1, rAt(y), mesh, handleGap, height }
+
+function lathe(points, mat, segments = 160) {
+  return new THREE.Mesh(new THREE.LatheGeometry(points.map(([r, y]) => new THREE.Vector2(r, y)), segments), mat);
+}
+function cyl(r, h, y, mat, seg = 128) {
+  const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, seg), mat);
+  m.position.y = y;
+  return m;
+}
+
+/* Copo Stanley 473 ml com tampa abridor — medidas das fotos e vídeos (mm):
+   base de inox Ø69 (0–19), corpo pintado Ø72→Ø86 (19–150), aro de inox Ø88 (150–164).
+   Tampa: borda em "tigela" que sobe até ~13 mm nas duas abas ao lado da boca de beber
+   e fica baixa (~1 mm) do lado do abridor; placa de inox 26 × 63 com furo do abridor. */
+function varLathe(profileAt, a0, a1, seg, mat, caps) {
+  const pos = [], idx = [];
+  const P = (r, y, a) => [r * Math.sin(a), y, r * Math.cos(a)];
+  const n = profileAt(a0).length;
+  for (let i = 0; i <= seg; i++) {
+    const a = a0 + (a1 - a0) * i / seg;
+    profileAt(a).forEach(([r, y]) => pos.push(...P(r, y, a)));
+  }
+  for (let i = 0; i < seg; i++) {
+    for (let j = 0; j < n - 1; j++) {
+      const k = i * n + j, k2 = (i + 1) * n + j;
+      idx.push(k, k2, k + 1, k + 1, k2, k2 + 1);
+    }
+  }
+  if (caps) {
+    [a0, a1].forEach((a) => {
+      const base = pos.length / 3;
+      const prof = profileAt(a);
+      prof.forEach(([r, y]) => pos.push(...P(r, y, a)));
+      const tris = THREE.ShapeUtils.triangulateShape(prof.map(([r, y]) => new THREE.Vector2(r, y)), []);
+      tris.forEach(([i, j, k]) => idx.push(base + i, base + j, base + k));
+    });
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setIndex(idx);
+  geo.computeVertexNormals();
+  return new THREE.Mesh(geo, mat);
+}
+function buildCopo(g) {
+  const rAt = (y) => 36 + 7 * (y - 19) / 131;
+  const lidPlastic = new THREE.MeshStandardMaterial({ color: 0x202023, metalness: 0.05, roughness: 0.58, side: THREE.DoubleSide });
+  const innerMat = new THREE.MeshStandardMaterial({ color: 0x9a9da2, metalness: 1, roughness: 0.38, side: THREE.DoubleSide });
+  // base de inox
+  g.add(lathe([[0, 1.2], [26, 0.2], [32.8, 0.2], [34.2, 1.4], [34.6, 3.5], [34.6, 18.6], [35.4, 19.1]], steelMat));
+  // corpo pintado (área de gravação)
+  g.add(lathe([[35.4, 19.1], [36, 19.5], [36.1, 20.8], [43, 149], [43.2, 150]], bodyMat));
+  // aro de inox com borda enrolada
+  g.add(lathe([[43.2, 150], [43.7, 151], [44, 163.2], [43.7, 164.1], [42.4, 164.5], [41.3, 164]], steelMat));
+  // parede interna e fundo com o ressalto central
+  g.add(lathe([[41.3, 164], [40.9, 160], [34.6, 46], [33.2, 41], [30, 39.4], [20, 38.6], [17.5, 40.2], [0, 40.8]], innerMat));
+
+  // tampa: fundo rebaixado ~6 mm dentro do copo; só a borda aparece acima do aro
+  const y0 = 158.5;
+  const gap = 0.78;
+  const aMax = Math.PI - gap / 2;
+  const rimTop = 165.0;
+  const yT = rimTop + 1.2;    // topo da borda: reto, na mesma altura em volta toda
+  const profile = () => {
+    const pts = [[34.4, y0], [35.3, y0 + 0.35], [36.1, y0 + 1.1]];
+    for (let t = 0.15; t <= 1.0001; t += 0.17) pts.push([36.1 + 6.9 * t, y0 + 1.1 + (yT - 0.4 - y0 - 1.1) * t]);
+    pts.push([43.5, yT - 0.05], [44.4, yT], [45.0, yT - 0.35], [45.25, yT - 1.0], [44.7, rimTop - 0.05], [42.6, rimTop - 0.35], [41.2, rimTop - 0.9], [41.2, y0 - 2]);
+    return pts;
+  };
+  g.add(varLathe(profile, -aMax, aMax, 220, lidPlastic, true));
+  // fundo da tampa com o vão da boca de beber
+  const deck = new THREE.Shape();
+  const al = Math.asin(15 / 34.8);
+  deck.absarc(0, 0, 34.8, Math.PI / 2 + al, Math.PI / 2 - al + Math.PI * 2, false);
+  deck.lineTo(15, 22);
+  deck.quadraticCurveTo(15, 20, 13, 20);
+  deck.lineTo(-13, 20);
+  deck.quadraticCurveTo(-15, 20, -15, 22);
+  deck.closePath();
+  const deckMesh = new THREE.Mesh(new THREE.ExtrudeGeometry(deck, { depth: 1.6, bevelEnabled: false, curveSegments: 96 }), lidPlastic);
+  deckMesh.rotation.x = -Math.PI / 2;
+  deckMesh.position.y = y0 - 1.6;
+  g.add(deckMesh);
+  // trilho rebaixado onde a placa corre
+  const trilho = new THREE.Mesh(new THREE.BoxGeometry(29, 0.5, 52), new THREE.MeshStandardMaterial({ color: 0x111113, roughness: 0.7 }));
+  trilho.position.set(0, y0 + 0.05, 6);
+  g.add(trilho);
+  // placa de inox: sai do fundo, junto da boca, e sobe em rampa até a beirada com o abridor
+  const pl = new THREE.Shape();
+  const rr = 2.2, W = 13, yA = -40.5, yB = 19.5;
+  pl.moveTo(-W + rr, yA);
+  pl.lineTo(W - rr, yA); pl.quadraticCurveTo(W, yA, W, yA + rr);
+  pl.lineTo(W, yB - rr); pl.quadraticCurveTo(W, yB, W - rr, yB);
+  pl.lineTo(-W + rr, yB); pl.quadraticCurveTo(-W, yB, -W, yB - rr);
+  pl.lineTo(-W, yA + rr); pl.quadraticCurveTo(-W, yA, -W + rr, yA);
+  const slot = new THREE.Path();
+  slot.moveTo(-8.5, -37.8); slot.lineTo(8.5, -37.8); slot.lineTo(8.5, -31.3); slot.lineTo(-8.5, -31.3); slot.closePath();
+  pl.holes.push(slot);
+  const tilt = Math.atan((yT + 0.2 - (y0 + 0.6)) / (40.5 + 19.5));
+  const plateMat = new THREE.MeshStandardMaterial({ color: 0x9da1a6, metalness: 1, roughness: 0.5 });
+  const plate = new THREE.Mesh(new THREE.ExtrudeGeometry(pl, { depth: 1.1, bevelEnabled: true, bevelThickness: 0.2, bevelSize: 0.2, bevelSegments: 2, curveSegments: 16 }), plateMat);
+  plate.rotation.x = -Math.PI / 2 - tilt;
+  plate.position.set(0, y0 + 0.6 + 19.5 * Math.tan(tilt), 0);
+  g.add(plate);
+  // ponta dobrada do abridor, apoiada na beirada
+  const lip = new THREE.Mesh(new THREE.BoxGeometry(26, 1.1, 3.4), plateMat);
+  lip.rotation.x = -0.6;
+  lip.position.set(0, yT + 0.9, 41.6);
+  g.add(lip);
+  return { y0: 26, y1: 143, rAt, handleGap: 0, height: yT + 2 };
+}
+/* Caneca de chopp Stanley 709 ml (24 oz) — medidas das fotos (mm):
+   altura 173; pé Ø97 (0–18) com curva até o corpo Ø86→Ø85 (33–156); aro de inox Ø86 (156–173).
+   Alça preta: braços 132–151 e 40–60, sai 53 mm do corpo, 24 mm de largura, pegada inclinada. */
+function buildCaneca(g) {
+  const rAt = (y) => 43 - 0.6 * (y - 37) / 119;
+  const plastic = new THREE.MeshStandardMaterial({ color: 0x1b1b1e, metalness: 0.05, roughness: 0.55 });
+  const innerMat = new THREE.MeshStandardMaterial({ color: 0x9a9da2, metalness: 1, roughness: 0.38, side: THREE.DoubleSide });
+  // fundo preto
+  g.add(lathe([[0, 1.6], [30, 1.0], [44, 0.5]], plastic));
+  // pé e corpo pintados
+  g.add(lathe([[44, 0.5], [46.9, 0.5], [47.9, 1.3], [48.5, 3.2], [48.6, 6], [48.6, 16.5], [48.3, 20], [47.2, 23.5], [45.4, 27], [43.7, 30.5], [43.1, 34], [43, 37], [42.4, 156]], bodyMat));
+  // aro de inox
+  g.add(lathe([[42.4, 156], [43, 156.2], [43.1, 157], [43.1, 172.3], [42.7, 173.1], [41.6, 173.2], [40.9, 172.5]], steelMat));
+  // parede interna e fundo com ressalto
+  g.add(lathe([[40.9, 172.5], [40.6, 168], [39.4, 30], [37, 25.5], [20, 24.2], [16.5, 26.4], [0, 27.2]], innerMat));
+
+  // alça (perfil em C extrudado, presa no lado direito, sem entrar no copo)
+  const sh = new THREE.Shape();
+  sh.moveTo(1, 150.4);
+  sh.lineTo(34, 149.6);
+  sh.quadraticCurveTo(41.2, 149.4, 41.2, 142.6);
+  sh.lineTo(49.2, 50);
+  sh.quadraticCurveTo(49.4, 42.2, 42, 42.2);
+  sh.lineTo(15, 42.2);
+  sh.lineTo(7, 38);
+  sh.lineTo(1, 38);
+  sh.lineTo(1, 58.8);
+  sh.lineTo(5, 58.8);
+  sh.lineTo(9, 55.8);
+  sh.lineTo(36.6, 55.8);
+  sh.quadraticCurveTo(41.2, 55.8, 41, 60.5);
+  sh.lineTo(33.4, 129.6);
+  sh.quadraticCurveTo(33, 136.2, 27, 136.2);
+  sh.lineTo(1, 136.8);
+  sh.closePath();
+  const hGeo = new THREE.ExtrudeGeometry(sh, { depth: 19.6, bevelEnabled: true, bevelThickness: 1.2, bevelSize: 1.2, bevelSegments: 4, curveSegments: 12 });
+  hGeo.translate(0, 0, -9.8);
+  const handle = new THREE.Mesh(hGeo, plastic);
+  handle.position.x = 42.2;
+  g.add(handle);
+  // parafusos nos braços
+  [[151.6, 1], [36.8, -1]].forEach(([y, s]) => {
+    const screw = new THREE.Mesh(new THREE.CylinderGeometry(2.2, 2.2, 0.6, 24), steelMat);
+    screw.position.set(42.2 + 7, y + s * 0.2, 0);
+    g.add(screw);
+  });
+  const r = 42.7;
+  return { y0: 40, y1: 152, rAt, handleGap: Math.PI * r + 32, height: 173.2 };
+}
+function buildGarrafa(g, r, hb, neck, capH) {
+  const rAt = () => r;
+  g.add(lathe([[0, 0], [r - 3, 0], [r, 3], [r, hb], [r - 2, hb + 8], [neck + 7, hb + 22], [neck, hb + 31], [neck, hb + 40]], bodyMat));
+  g.add(cyl(neck + 2.6, capH, hb + 36 + capH / 2, lidMat));
+  g.add(cyl(neck + 3.2, 4, hb + 38, steelMat));
+  const loop = new THREE.Mesh(new THREE.TorusGeometry(neck * 0.55, 3, 16, 48), lidMat);
+  loop.position.set(0, hb + 36 + capH + neck * 0.45, 0);
+  g.add(loop);
+  return { y0: 18, y1: hb - 14, rAt, handleGap: 0, height: hb + 36 + capH + neck };
+}
+
+function buildProduct() {
+  if (productGroup) {
+    scene.remove(productGroup);
+    productGroup.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
+  }
+  productGroup = new THREE.Group();
+  let info;
+  if (state.product === 'copo') info = buildCopo(productGroup);
+  else if (state.product === 'caneca') info = buildCaneca(productGroup);
+  else if (state.product === 'garrafa') info = buildGarrafa(productGroup, 46, 212, 27, 36);
+  else info = buildGarrafa(productGroup, 35, 190, 21, 30);
+
+  const bandH = info.y1 - info.y0;
+  const off = 0.25;
+  const geo = new THREE.CylinderGeometry(info.rAt(info.y1) + off, info.rAt(info.y0) + off, bandH, 200, 1, true, Math.PI, Math.PI * 2);
+  const mesh = new THREE.Mesh(geo, engraveMat);
+  mesh.position.y = (info.y0 + info.y1) / 2;
+  productGroup.add(mesh);
+  band = Object.assign({}, info, { bandH, mesh });
+
+  productGroup.position.y = -info.height / 2;
+  scene.add(productGroup);
+
+  const maxH = info.height;
+  controls.target.set(0, 0, 0);
+  const box = new THREE.Box3().setFromObject(productGroup);
+  const maxR = Math.max(-box.min.x, box.max.x, -box.min.z, box.max.z);
+  const vHalf = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+  const hHalf = vHalf * Math.max(camera.aspect || 1, 0.4);
+  const dist = Math.max((maxH / 2) / vHalf, maxR / hHalf, 330) * 1.32;
+  controls.minDistance = dist * 0.45;
+  controls.maxDistance = dist * 1.6;
+  setView(-18, dist, true);
+  $('hSlider').max = Math.min(40, Math.floor(bandH));
+  if (state.h > bandH) { state.h = Math.floor(bandH); $('hSlider').value = state.h; }
+  if (state.logo) clampLogo();
+  applyColor();
+  drawText();
+}
+
+function applyColor() {
+  const c = state.color;
+  $('colorName').textContent = c.name;
+  if (c.inox) {
+    bodyMat.color.set('#C3C6CB');
+    bodyMat.metalness = 1; bodyMat.roughness = 0.32; bodyMat.envMapIntensity = 1;
+    engraveMat.metalness = 0.15; engraveMat.roughness = 0.85;
+    $('engraveTag').innerHTML = 'Laser escurece o <i>inox</i>';
+  } else {
+    bodyMat.color.set(c.hex);
+    bodyMat.metalness = 0.1; bodyMat.roughness = 0.62; bodyMat.envMapIntensity = 0.25;
+    engraveMat.metalness = 0.95; engraveMat.roughness = 0.28;
+    $('engraveTag').innerHTML = 'Laser revela o <i>inox</i>';
+  }
+  drawText();
+}
+
+/* ---------- texto gravado ---------- */
+const PXY = 6; // px por mm na vertical da textura
+function fontCss(px) {
+  const f = FONTS[state.font];
+  return `${f.wt} ${px}px ${f.fam}, cursive`;
+}
+async function loadFontThenDraw() {
+  try { await document.fonts.load(fontCss(64)); } catch (e) { /* segue com fallback */ }
+  drawText();
+}
+
+let lastSpecs = null;
+function drawText() {
+  if (!band) return;
+  const lines = [state.line1, state.line2].map((s) => s.trim()).filter(Boolean);
+  const h = state.h;
+  const lineGap = h * 1.25;
+  const blockH = lines.length ? h + (lines.length - 1) * lineGap : 0;
+  const yText = band.y0 + band.bandH * (state.vpos / 100);
+  const r = band.rAt(yText);
+  const circ = 2 * Math.PI * r;
+
+  const W = 2048;
+  const H = Math.round(band.bandH * PXY);
+  if (engraveCanvas.width !== W || engraveCanvas.height !== H) {
+    engraveCanvas.width = W; engraveCanvas.height = H;
+  }
+  const ctx = engraveCanvas.getContext('2d');
+  ctx.clearRect(0, 0, W, H);
+  const pxX = W / circ;
+  ctx.font = fontCss(h * PXY);
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = state.color.inox ? '#2E2F33' : '#E6E8EC';
+
+  let lenMm = 0;
+  lines.forEach((l) => { lenMm = Math.max(lenMm, ctx.measureText(l).width / PXY); });
+  lastNaturalW = lenMm;
+  const sxText = state.textW && lenMm ? state.textW / lenMm : 1;
+  if (state.textW && lenMm) lenMm = state.textW;
+  lastTextW = lenMm;
+
+  const cy = H - (state.vpos / 100) * H;
+  [-W, 0, W].forEach((shift) => {
+    ctx.save();
+    ctx.translate(W / 2 + shift, cy);
+    ctx.scale(pxX / PXY * sxText, 1);
+    lines.forEach((l, i) => {
+      const y = (i - (lines.length - 1) / 2) * lineGap * PXY;
+      ctx.fillText(l, 0, y);
+    });
+    ctx.restore();
+  });
+  let logoInfo = null;
+  if (state.logo && logoCanvas) {
+    const yL = band.y0 + band.bandH * (state.logoV / 100);
+    const rL = band.rAt(yL);
+    const pxXL = W / (2 * Math.PI * rL);
+    const lwMm = state.logoW, lhMm = state.logoH;
+    const wPx = lwMm * pxXL, hPx = lhMm * PXY;
+    const cxL = W / 2 + (state.logoA / 360) * W;
+    const cyL = H - (state.logoV / 100) * H;
+    const tc = tinted(ctx.fillStyle);
+    ctx.imageSmoothingEnabled = true;
+    [-W, 0, W].forEach((shift) => ctx.drawImage(tc, cxL - wPx / 2 + shift, cyL - hPx / 2, wPx, hPx));
+    logoInfo = { w: lwMm, h: lhMm, d: rL * 2, side: { 0: 'frente', 90: 'direita', 180: 'costas', '-90': 'esquerda' }[state.logoA], fromBase: yL };
+  }
+  engraveTex.needsUpdate = true;
+
+  // medidas
+  const usable = circ - band.handleGap;
+  const deg = lenMm / circ * 360;
+  const fitsLen = lenMm <= usable;
+  const fitsH = blockH <= band.bandH;
+  const flatZone = 2 * Math.sqrt(Math.max(0, r * r - (r - 1.5) * (r - 1.5)));
+  const needRotary = lenMm > flatZone;
+
+  $('hOut').textContent = fmt(h) + ' mm';
+  const tl = isLogo();
+  const setF = (id, v) => { const el = $(id); if (document.activeElement !== el) el.value = v; };
+  setF('dTW', state.textW ? fmt(state.textW) : '');
+  $('dTW').placeholder = lines.length ? 'auto ' + fmt(lastNaturalW) : 'auto';
+  setF('dTH', fmt(h));
+  setF('dTY', fmt(yText));
+  if (logoInfo) { setF('dLW', fmt(logoInfo.w)); setF('dLH', fmt(logoInfo.h)); setF('dLY', fmt(logoInfo.fromBase)); }
+  if (document.activeElement !== $('qSize')) $('qSize').value = String(tl ? Math.round(state.logoW * 10) / 10 : h);
+  $('qSize').max = tl ? '120' : $('hSlider').max;
+  $('liveTxt').textContent = tl && logoInfo
+    ? 'Logo ' + fmt(logoInfo.w) + ' × ' + fmt(logoInfo.h) + ' mm'
+    : (lines.length ? fmt(lenMm) + ' × ' + fmt(blockH) + ' mm' : 'sem texto');
+  $('vOut').textContent = state.vpos < 40 ? 'mais embaixo' : state.vpos > 60 ? 'mais em cima' : 'meio';
+  $('sLen').textContent = lines.length ? fmt(lenMm) + ' mm' : '–';
+  $('sH').textContent = lines.length ? fmt(blockH) + ' mm' : '–';
+  $('sD').textContent = fmt(r * 2) + ' mm';
+  $('sDeg').textContent = lines.length ? Math.round(deg) + '°' : '–';
+
+  const ok = fitsLen && fitsH;
+  const fill = $('barFill');
+  fill.style.width = Math.min(100, lenMm / circ * 100) + '%';
+  fill.style.background = ok ? 'var(--ok)' : 'var(--bad)';
+
+  let msg, color;
+  if (!lines.length) { msg = 'Digite o texto para ver as medidas.'; color = 'var(--muted)'; }
+  else if (!fitsLen) { msg = band.handleGap ? 'O texto encosta na alça. Diminua a letra ou o texto.' : 'O texto dá mais de uma volta. Diminua a letra ou o texto.'; color = 'var(--bad)'; }
+  else if (!fitsH) { msg = 'O bloco ficou mais alto que a área gravável.'; color = 'var(--bad)'; }
+  else if (lenMm > usable * 0.88) { msg = 'Cabe, mas as pontas ficam bem próximas.'; color = 'var(--warn)'; }
+  else { msg = 'Cabe na área de gravação.'; color = 'var(--ok)'; }
+  const icon = color === 'var(--ok)'
+    ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>'
+    : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><path d="M12 16.5v.5"/></svg>';
+  const st = $('status');
+  st.style.color = color;
+  $('liveDot').style.background = color;
+  st.innerHTML = icon + '<span></span>';
+  st.querySelector('span').textContent = msg;
+
+  const chips = $('chips');
+  chips.innerHTML = '';
+  if (lines.length) {
+    const c1 = document.createElement('span');
+    c1.className = 'chip' + (needRotary ? ' on' : '');
+    c1.textContent = needRotary ? 'Usar eixo rotativo' : 'Dá para gravar sem rotativo';
+    chips.appendChild(c1);
+    const c2 = document.createElement('span');
+    c2.className = 'chip';
+    c2.textContent = 'Sem rotativo: até ~' + Math.round(flatZone) + ' mm';
+    chips.appendChild(c2);
+  }
+
+  scheduleSave();
+  lastSpecs = { lines, font: FONTS[state.font].name, h, lenMm, blockH, d: r * 2, deg, product: PRODUCTS.find((p) => p.id === state.product).label, color: state.color.name, rotary: needRotary, logo: logoInfo, yText, textW: state.textW };
+  $('copyOut').hidden = true;
+  $('copyLabel').textContent = 'Copiar medidas';
+}
+function fmt(n) { return (Math.round(n * 10) / 10).toLocaleString('pt-BR'); }
+
+/* ---------- configuração e pedido ---------- */
+function snapshot() {
+  return {
+    product: state.product, color: { ...state.color }, font: state.font,
+    line1: state.line1, line2: state.line2, h: state.h, vpos: state.vpos, textW: state.textW,
+    logo: state.logo, logoW: state.logoW, logoH: state.logoH, logoV: state.logoV, logoA: state.logoA, logoInv: state.logoInv
+  };
+}
+function syncUI() {
+  prodBox.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', PRODUCTS[i].id === state.product ? 'true' : 'false'));
+  const ci = COLORS.findIndex((c) => c.name === state.color.name && c.hex === state.color.hex);
+  swBox.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', (ci === -1 ? i === COLORS.length : i === ci) ? 'true' : 'false'));
+  if (ci === -1 && /^#[0-9a-f]{6}$/i.test(state.color.hex)) $('customColor').value = state.color.hex;
+  fontBox.querySelectorAll('button').forEach((b, i) => b.setAttribute('aria-pressed', i === state.font ? 'true' : 'false'));
+  $('fontName').textContent = FONTS[state.font].name;
+  $('line1').value = state.line1; $('line2').value = state.line2;
+  $('hSlider').value = state.h; $('vSlider').value = state.vpos;
+  const hasLogo = !!state.logo;
+  $('logoBox').hidden = !hasLogo; $('dimLogo').hidden = !hasLogo; $('lLockWrap').hidden = !hasLogo;
+  $('uploadTxt').textContent = hasLogo ? 'Trocar logo' : 'Importar logo (PNG, JPG ou SVG)';
+  $('logoInvert').checked = state.logoInv;
+  $('logoSides').querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', Number(b.dataset.a) === state.logoA ? 'true' : 'false'));
+  if (!hasLogo) state.target = 'text';
+  refreshTarget();
+}
+function applyConfig(cfg) {
+  Object.assign(state, {
+    product: cfg.product, color: { ...cfg.color }, font: cfg.font, line1: cfg.line1 || '', line2: cfg.line2 || '',
+    h: cfg.h, vpos: cfg.vpos, textW: cfg.textW || null,
+    logo: cfg.logo || null, logoW: cfg.logoW || 40, logoH: cfg.logoH || 25, logoV: cfg.logoV || 50, logoA: cfg.logoA || 0, logoInv: !!cfg.logoInv
+  });
+  if (state.logo) rebuildLogoCanvas(); else logoCanvas = null;
+  syncUI();
+  buildProduct();
+  loadFontThenDraw();
+}
+const brl = (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+function describe(it) {
+  const prod = PRODUCTS.find((p) => p.id === it.product).label;
+  const txt = [it.line1, it.line2].filter((t) => t && t.trim()).join(' / ');
+  const parts = [];
+  if (txt) parts.push('“' + txt + '”');
+  if (it.logo) parts.push('logo');
+  return { title: prod + ' · ' + it.color.name, desc: parts.join(' + ') || 'sem gravação' };
+}
+function orderTotal(items) {
+  let any = false, total = 0;
+  items.forEach((it) => { if (it.price != null && !isNaN(it.price)) { any = true; total += it.price * (it.qty || 1); } });
+  return any ? total : null;
+}
+function specsText(s) {
+  return [
+    'Produto: ' + s.product + ' (' + s.color + ')',
+    s.lines.length ? 'Texto: ' + s.lines.join(' / ') + ' · fonte ' + s.font : '',
+    s.lines.length ? 'Altura da letra: ' + fmt(s.h) + ' mm · comprimento ' + fmt(s.lenMm) + ' mm' + (s.textW ? ' (largura fixada)' : '') + (s.yText != null ? ' · centro a ' + fmt(s.yText) + ' mm da base' : '') : '',
+    s.lines.length ? 'Diâmetro (rotativo): ' + fmt(s.d) + ' mm · ' + Math.round(s.deg) + '° da volta' + (s.rotary ? ' · usar rotativo' : '') : '',
+    s.logo ? 'Logo: ' + fmt(s.logo.w) + ' × ' + fmt(s.logo.h) + ' mm · ' + s.logo.side + ' · centro a ' + fmt(s.logo.fromBase) + ' mm da base · Ø ' + fmt(s.logo.d) + ' mm' : ''
+  ].filter(Boolean).join('\n');
+}
+
+const order = [];
+let editIdx = null;
+function thumb() {
+  const keep = camera.position.clone();
+  const pos = new THREE.Vector3().subVectors(camera.position, controls.target);
+  const sp = new THREE.Spherical().setFromVector3(pos);
+  const az = state.logo && !([state.line1, state.line2].some((t) => t.trim())) ? state.logoA : 0;
+  sp.theta = az * Math.PI / 180; sp.phi = Math.PI * 0.46;
+  camera.position.setFromSpherical(sp).add(controls.target); camera.lookAt(controls.target);
+  renderer.render(scene, camera);
+  const src = renderer.domElement, c = document.createElement('canvas');
+  const k = 240 / src.height; c.width = Math.round(src.width * k); c.height = 240;
+  const x = c.getContext('2d'); x.fillStyle = '#2b2b31'; x.fillRect(0, 0, c.width, c.height);
+  x.drawImage(src, 0, 0, c.width, c.height);
+  camera.position.copy(keep); camera.lookAt(controls.target);
+  const sq = document.createElement('canvas'); sq.width = 160; sq.height = 200;
+  const y = sq.getContext('2d'); y.fillStyle = '#2b2b31'; y.fillRect(0, 0, 160, 200);
+  const s2 = 200 / c.height; y.drawImage(c, (160 - c.width * s2) / 2, 0, c.width * s2, 200);
+  return sq.toDataURL('image/jpeg', 0.82);
+}
+function setEditing(i) {
+  editIdx = i;
+  const on = i !== null;
+  $('addItemLabel').textContent = on ? 'Salvar alterações no item ' + (i + 1) : (order.length ? 'Adicionar outro item ao pedido' : 'Adicionar ao pedido');
+  $('cancelEdit').hidden = !on;
+  $('editingNote').hidden = !on;
+  $('editingNote').textContent = on ? 'Editando o item ' + (i + 1) + '. Mude o que quiser e salve.' : '';
+  renderOrder();
+}
+$('addItemBtn').addEventListener('click', () => {
+  drawText();
+  const cfg = snapshot();
+  cfg.specs = JSON.parse(JSON.stringify(lastSpecs));
+  cfg.thumb = thumb();
+  if (editIdx !== null) { cfg.qty = order[editIdx].qty; cfg.price = order[editIdx].price; order[editIdx] = cfg; }
+  else { cfg.qty = 1; cfg.price = null; order.push(cfg); }
+  setEditing(null);
+  $('orderBox').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+});
+$('cancelEdit').addEventListener('click', () => setEditing(null));
+$('clearOrder').addEventListener('click', (e) => {
+  const b = e.currentTarget;
+  if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Toque de novo para apagar tudo'; setTimeout(() => { b.dataset.armed = ''; b.textContent = 'Limpar pedido'; }, 3000); return; }
+  order.length = 0; b.dataset.armed = ''; b.textContent = 'Limpar pedido'; setEditing(null);
+});
+function renderOrder() {
+  scheduleSave();
+  const box = $('orderBox'), list = $('orderList');
+  box.hidden = order.length === 0;
+  $('orderCount').textContent = order.length + (order.length === 1 ? ' item' : ' itens');
+  list.innerHTML = '';
+  order.forEach((it, i) => {
+    const d = describe(it);
+    const li = document.createElement('li');
+    li.className = 'item' + (editIdx === i ? ' editing' : '');
+    li.innerHTML = '<img alt=""><div class="info"><strong></strong><span class="desc"></span>' +
+      '<div class="iq"><label>Qtd <input class="q" type="number" inputmode="numeric" min="1" step="1"></label>' +
+      '<label>R$ <input class="pr" type="text" inputmode="decimal" placeholder="valor un."></label></div>' +
+      '<div class="ia"><button type="button" class="ed">Editar</button><button type="button" class="du">Duplicar</button><button type="button" class="del">Apagar</button></div></div>';
+    li.querySelector('img').src = it.thumb;
+    li.querySelector('strong').textContent = (i + 1) + '. ' + d.title;
+    li.querySelector('.desc').textContent = d.desc;
+    const q = li.querySelector('.q'), pr = li.querySelector('.pr');
+    q.value = it.qty || 1;
+    q.setAttribute('aria-label', 'Quantidade do item ' + (i + 1));
+    pr.value = it.price != null ? String(it.price).replace('.', ',') : '';
+    pr.setAttribute('aria-label', 'Valor unitário do item ' + (i + 1));
+    q.addEventListener('change', () => { it.qty = Math.max(1, parseInt(q.value, 10) || 1); q.value = it.qty; renderTotals(); });
+    pr.addEventListener('change', () => { const v = num(pr.value); it.price = isNaN(v) ? null : v; renderTotals(); });
+    li.querySelector('.ed').addEventListener('click', () => { applyConfig(it); setEditing(i); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    li.querySelector('.du').addEventListener('click', () => {
+      const copy = { ...it, color: { ...it.color }, specs: JSON.parse(JSON.stringify(it.specs)) };
+      order.splice(i + 1, 0, copy);
+      applyConfig(copy); setEditing(i + 1); window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    li.querySelector('.del').addEventListener('click', (e) => {
+      const b = e.currentTarget;
+      if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Confirmar'; setTimeout(() => { b.dataset.armed = ''; b.textContent = 'Apagar'; }, 3000); return; }
+      order.splice(i, 1);
+      setEditing(editIdx === i ? null : (editIdx !== null && editIdx > i ? editIdx - 1 : editIdx));
+    });
+    list.appendChild(li);
+  });
+  renderTotals();
+  $('shareInfo').textContent = order.length
+    ? 'O link vai com os ' + order.length + ' itens do pedido. O cliente passa de um item para o outro, gira cada peça e vê o resumo, mas não consegue mudar nada.'
+    : 'Gera um link com o produto, a cor, o texto e a logo. O cliente abre no celular, gira a peça e vê como vai ficar, mas não consegue mudar nada.';
+  $('copyLabel').textContent = order.length ? 'Copiar medidas do pedido' : 'Copiar medidas';
+  if (editIdx === null) $('addItemLabel').textContent = order.length ? 'Adicionar outro item ao pedido' : 'Adicionar ao pedido';
+}
+function renderTotals() {
+  const t = orderTotal(order), el = $('orderTotal');
+  const units = order.reduce((a, it) => a + (it.qty || 1), 0);
+  el.hidden = t == null;
+  if (t != null) el.innerHTML = '<span>Total · ' + units + (units === 1 ? ' peça' : ' peças') + '</span><span>' + brl(t) + '</span>';
+}
+
+/* copiar medidas */
+$('copyBtn').addEventListener('click', () => {
+  let txt;
+  if (order.length) {
+    txt = order.map((it, i) => 'ITEM ' + (i + 1) + ' de ' + order.length + ((it.qty || 1) > 1 ? ' · ' + it.qty + ' unidades' : '') + '\n' + specsText(it.specs)).join('\n\n');
+  } else {
+    if (!lastSpecs || (!lastSpecs.lines.length && !lastSpecs.logo)) return;
+    txt = specsText(lastSpecs);
+  }
+  const out = $('copyOut');
+  const done = () => { $('copyLabel').textContent = 'Medidas copiadas'; };
+  const fallback = () => { out.value = txt; out.hidden = false; out.focus(); out.select(); $('copyLabel').textContent = 'Selecione e copie abaixo'; };
+  try { navigator.clipboard.writeText(txt).then(done, fallback); } catch (e) { fallback(); }
+});
+
+/* ---------- link para o cliente ---------- */
+// Tudo vai dentro do próprio link (depois do #): nada é enviado para servidor.
+async function deflate(u8) {
+  if (!('CompressionStream' in window)) return { z: false, data: u8 };
+  const buf = await new Response(new Blob([u8]).stream().pipeThrough(new CompressionStream('deflate-raw'))).arrayBuffer();
+  return { z: true, data: new Uint8Array(buf) };
+}
+async function inflate(u8) {
+  const buf = await new Response(new Blob([u8]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer();
+  return new Uint8Array(buf);
+}
+function b64url(u8) {
+  let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000));
+  return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function unb64url(t) {
+  t = t.replace(/-/g, '+').replace(/_/g, '/'); while (t.length % 4) t += '=';
+  const s = atob(t), u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u;
+}
+function shrinkMask(m, maxSide) {
+  const k = Math.min(1, maxSide / Math.max(m.w, m.h));
+  if (k >= 1) return m;
+  const w = Math.max(1, Math.round(m.w * k)), h = Math.max(1, Math.round(m.h * k)), bits = new Uint8Array(w * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    let on = 0, n = 0;
+    const sx0 = Math.floor(x / k), sx1 = Math.min(m.w, Math.floor((x + 1) / k)), sy0 = Math.floor(y / k), sy1 = Math.min(m.h, Math.floor((y + 1) / k));
+    for (let sy = sy0; sy < Math.max(sy1, sy0 + 1); sy++) for (let sx = sx0; sx < Math.max(sx1, sx0 + 1); sx++) { on += m.bits[sy * m.w + sx]; n++; }
+    bits[y * w + x] = on * 2 >= n ? 1 : 0;
+  }
+  return { w, h, bits };
+}
+async function buildShareUrl() {
+  const items = order.length ? order : [snapshot()];
+  const logos = [];
+  const itemsMeta = items.map((it) => {
+    const m = { p: it.product, c: { n: it.color.name, h: it.color.hex, i: it.color.inox ? 1 : 0 }, f: it.font, t: [it.line1, it.line2], h: it.h, v: it.vpos, tw: it.textW };
+    if (order.length) { m.q = it.qty || 1; if (it.price != null) m.$ = it.price; }
+    if (it.logo) {
+      let li = logos.findIndex((l) => l.src === it.logo);
+      if (li === -1) { li = logos.length; logos.push({ src: it.logo, m: shrinkMask(it.logo, 360) }); }
+      m.L = { i: li, lw: it.logoW, lh: it.logoH, lv: it.logoV, la: it.logoA, inv: it.logoInv ? 1 : 0 };
+    }
+    return m;
+  });
+  const meta = { v: 2, items: itemsMeta, logos: logos.map((l) => ({ w: l.m.w, h: l.m.h })) };
+  const packs = logos.map((l) => {
+    const pk = new Uint8Array(Math.ceil(l.m.bits.length / 8));
+    for (let i = 0; i < l.m.bits.length; i++) if (l.m.bits[i]) pk[i >> 3] |= 128 >> (i & 7);
+    return pk;
+  });
+  const js = new TextEncoder().encode(JSON.stringify(meta));
+  const size = 4 + js.length + packs.reduce((a, p) => a + p.length, 0);
+  const all = new Uint8Array(size);
+  new DataView(all.buffer).setUint32(0, js.length);
+  all.set(js, 4);
+  let off = 4 + js.length;
+  packs.forEach((p) => { all.set(p, off); off += p.length; });
+  const out = await deflate(all);
+  return location.origin + location.pathname + '#p=' + (out.z ? 'z' : 'r') + b64url(out.data);
+}
+async function readShared(hash) {
+  const raw = hash.slice(3);
+  let u8 = unb64url(raw.slice(1));
+  if (raw[0] === 'z') u8 = await inflate(u8);
+  const n = new DataView(u8.buffer, u8.byteOffset).getUint32(0);
+  const meta = JSON.parse(new TextDecoder().decode(u8.subarray(4, 4 + n)));
+  return { meta, packed: u8.subarray(4 + n) };
+}
+function unpackMask(packed, off, w, h) {
+  const bits = new Uint8Array(w * h);
+  for (let i = 0; i < bits.length; i++) bits[i] = (packed[off + (i >> 3)] >> (7 - (i & 7))) & 1;
+  return { w, h, bits };
+}
+function decodeOrder({ meta, packed }) {
+  const colorOf = (c) => COLORS.find((k) => k.name === c.n && k.hex === c.h) || { name: c.n, hex: c.h, inox: !!c.i };
+  const base = (m) => ({
+    product: PRODUCTS.some((p) => p.id === m.p) ? m.p : 'copo', color: colorOf(m.c), font: FONTS[m.f] ? m.f : 0,
+    line1: (m.t && m.t[0]) || '', line2: (m.t && m.t[1]) || '', h: m.h, vpos: m.v, textW: m.tw || null,
+    qty: m.q || 1, price: m.$ != null ? m.$ : null
+  });
+  if (meta.v === 2) {
+    let off = 0;
+    const logos = meta.logos.map((l) => { const mk = unpackMask(packed, off, l.w, l.h); off += Math.ceil(l.w * l.h / 8); return mk; });
+    return meta.items.map((m) => {
+      const it = base(m);
+      if (m.L) Object.assign(it, { logo: logos[m.L.i], logoW: m.L.lw, logoH: m.L.lh, logoV: m.L.lv, logoA: m.L.la, logoInv: !!m.L.inv });
+      return it;
+    });
+  }
+  // formato antigo (um item só)
+  const it = base(meta);
+  if (meta.L) {
+    const mk = unpackMask(packed, 0, meta.L.w, meta.L.h);
+    Object.assign(it, { logo: mk, logoW: meta.L.lw, logoH: meta.L.lh || meta.L.lw * mk.h / mk.w, logoV: meta.L.lv, logoA: meta.L.la, logoInv: false });
+  }
+  return [it];
+}
+let viewerItems = [], viewerIdx = 0;
+function enterViewer(items) {
+  viewerItems = items;
+  document.body.classList.add('viewer');
+  document.title = "Prévia do seu pedido · Art's Brindes";
+  document.querySelector('.top h1').textContent = 'Prévia do seu pedido';
+  document.querySelector('.top p').textContent = items.length > 1
+    ? 'Use as setas para ver cada item. Gire a peça com o dedo para ver todos os lados.'
+    : 'Gire a peça com o dedo para ver todos os lados.';
+  $('viewerCard').hidden = false;
+  $('itemNav').hidden = items.length < 2;
+  if (items.length > 1) {
+    $('viewerOrderWrap').hidden = false;
+    const t = orderTotal(items), el = $('viewerTotal');
+    const units = items.reduce((a, it) => a + (it.qty || 1), 0);
+    el.hidden = t == null;
+    if (t != null) el.innerHTML = '<span>Total · ' + units + (units === 1 ? ' peça' : ' peças') + '</span><span>' + brl(t) + '</span>';
+  }
+  $('prevItem').addEventListener('click', () => showViewerItem(viewerIdx - 1));
+  $('nextItem').addEventListener('click', () => showViewerItem(viewerIdx + 1));
+  if (WHATSAPP) {
+    const a = $('waApprove');
+    const what = items.length > 1 ? 'o pedido com ' + items.length + ' itens' : 'a prévia';
+    a.href = 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent('Olá! Vi ' + what + ' e aprovo a gravação: ' + location.href);
+    a.hidden = false;
+  }
+}
+function showViewerItem(i) {
+  if (i < 0 || i >= viewerItems.length) return;
+  viewerIdx = i;
+  const it = viewerItems[i];
+  applyConfig(it);
+  setView(0, null, true);
+  $('itemPos').textContent = 'Item ' + (i + 1) + ' de ' + viewerItems.length;
+  $('prevItem').disabled = i === 0;
+  $('nextItem').disabled = i === viewerItems.length - 1;
+  const d = describe(it);
+  const rows = [
+    ['Produto', PRODUCTS.find((p) => p.id === it.product).label],
+    ['Cor', it.color.name],
+    ['Texto', [it.line1, it.line2].filter((t) => t.trim()).join(' / ') || '—'],
+    ['Fonte', FONTS[it.font].name]
+  ];
+  if (it.logo) rows.push(['Logo', 'Sim, na ' + ({ 0: 'frente', 90: 'lateral direita', 180: 'parte de trás', '-90': 'lateral esquerda' }[it.logoA])]);
+  if (viewerItems.length > 1) rows.unshift(['Item', (i + 1) + ' de ' + viewerItems.length + ((it.qty || 1) > 1 ? ' · ' + it.qty + ' unidades' : '')]);
+  const list = $('viewerList'); list.innerHTML = '';
+  rows.forEach(([k, v]) => { const dt = document.createElement('dt'); dt.textContent = k; const dd = document.createElement('dd'); dd.textContent = v; list.append(dt, dd); });
+  if (viewerItems.length > 1) {
+    const ol = $('viewerOrder'); ol.innerHTML = '';
+    viewerItems.forEach((x, j) => {
+      const dx = describe(x);
+      const li = document.createElement('li'); const b = document.createElement('button'); b.type = 'button';
+      b.setAttribute('aria-current', j === i ? 'true' : 'false');
+      const left = document.createElement('span'); left.textContent = (x.qty || 1) + '× ' + dx.title + ' · ' + dx.desc;
+      const right = document.createElement('b'); right.textContent = x.price != null ? brl(x.price * (x.qty || 1)) : '';
+      b.append(left, right); b.addEventListener('click', () => { showViewerItem(j); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+      li.appendChild(b); ol.appendChild(li);
+    });
+  }
+}
+// Encurta o link pelo is.gd (gratuito). Se falhar, devolve o link completo.
+const shortCache = new Map();
+function shorten(longUrl) {
+  if (shortCache.has(longUrl)) return Promise.resolve(shortCache.get(longUrl));
+  if (longUrl.length > 4900) return Promise.resolve(longUrl);
+  return new Promise((resolve) => {
+    const cb = '__isgd' + Date.now() + Math.floor(Math.random() * 1000);
+    const sc = document.createElement('script');
+    let done = false;
+    const finish = (u) => {
+      if (done) return; done = true;
+      clearTimeout(timer); delete window[cb]; sc.remove();
+      if (u !== longUrl) shortCache.set(longUrl, u);
+      resolve(u);
+    };
+    const timer = setTimeout(() => finish(longUrl), 7000);
+    window[cb] = (r) => finish(r && r.shorturl ? r.shorturl : longUrl);
+    sc.onerror = () => finish(longUrl);
+    sc.src = 'https://is.gd/create.php?format=json&callback=' + cb + '&url=' + encodeURIComponent(longUrl);
+    document.head.appendChild(sc);
+  });
+}
+async function shareUrl() {
+  shareMsg('Gerando link…');
+  const long = await buildShareUrl();
+  const u = await shorten(long);
+  return u;
+}
+const shareMsg = (t, bad) => { const m = $('shareMsg'); m.textContent = t; m.style.color = bad ? 'var(--bad)' : 'var(--ok)'; };
+function showLink(url) { const o = $('shareOut'); o.value = url; o.hidden = false; o.focus(); o.select(); }
+function editWarning() {
+  if (editIdx !== null) { shareMsg('Atenção: o item ' + (editIdx + 1) + ' está em edição. Salve antes, senão o link vai sem essas mudanças.', true); return true; }
+  return false;
+}
+$('shareBtn').addEventListener('click', async () => {
+  if (editWarning()) return;
+  const url = await shareUrl();
+  const short = !url.includes('#p=');
+  const text = "Olá! Veja a prévia do seu pedido na Art's Brindes 👇";
+  const full = text + '\n' + url;
+  if (navigator.share) {
+    try { await navigator.share({ text: full }); shareMsg(short ? 'Link curto enviado.' : 'Link enviado (o encurtador não respondeu, foi o link completo).'); return; }
+    catch (e) { if (e && e.name === 'AbortError') { shareMsg(''); return; } }
+  }
+  window.open('https://wa.me/?text=' + encodeURIComponent(full), '_blank', 'noopener');
+  shareMsg('Abrindo o WhatsApp. Se não abrir, use Copiar link.');
+});
+$('copyLinkBtn').addEventListener('click', async () => {
+  if (editWarning()) return;
+  const url = await shareUrl();
+  try { await navigator.clipboard.writeText(url); shareMsg(url.includes('#p=') ? 'Link copiado (completo: o encurtador não respondeu).' : 'Link curto copiado: ' + url.replace('https://', '')); }
+  catch (e) { showLink(url); shareMsg('Selecione e copie o link abaixo.'); }
+});
+$('imgBtn').addEventListener('click', async () => {
+  renderer.render(scene, camera);
+  const src = renderer.domElement;
+  const out = document.createElement('canvas');
+  out.width = src.width; out.height = src.height + Math.round(src.width * 0.12);
+  const x = out.getContext('2d');
+  const g = x.createRadialGradient(out.width / 2, out.height * 0.38, 10, out.width / 2, out.height * 0.38, out.height * 0.8);
+  g.addColorStop(0, '#4A4A52'); g.addColorStop(1, '#1E1E22');
+  x.fillStyle = g; x.fillRect(0, 0, out.width, out.height);
+  x.drawImage(src, 0, 0);
+  const fs = Math.round(out.width * 0.04);
+  x.font = '900 ' + fs + 'px Archivo, Arial, sans-serif';
+  x.textBaseline = 'middle';
+  const y = src.height + (out.height - src.height) / 2;
+  x.fillStyle = '#FFFFFF'; x.fillText("ART'S", out.width * 0.05, y);
+  const wA = x.measureText("ART'S ").width;
+  x.fillStyle = '#FF6A00'; x.fillText('BRINDES', out.width * 0.05 + wA, y);
+  x.font = '600 ' + Math.round(fs * 0.7) + 'px Archivo, Arial, sans-serif';
+  x.fillStyle = '#B4B4BC'; x.textAlign = 'right'; x.fillText('Prévia da gravação', out.width * 0.95, y);
+  const blob = await new Promise((r) => out.toBlob(r, 'image/png'));
+  const file = new File([blob], 'previa-arts-brindes.png', { type: 'image/png' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], title: "Prévia · Art's Brindes" }); shareMsg('Imagem enviada.'); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = file.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  shareMsg('Imagem salva.');
+});
+
+/* ---------- câmera e vistas ---------- */
+let anim = null;
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function setView(azDeg, dist, instant) {
+  const d = dist || camera.position.distanceTo(controls.target);
+  const phi = Math.PI * 0.44;
+  const th = azDeg * Math.PI / 180;
+  const to = new THREE.Vector3(d * Math.sin(phi) * Math.sin(th), d * Math.cos(phi), d * Math.sin(phi) * Math.cos(th));
+  if (instant || reduce) { camera.position.copy(to); controls.update(); return; }
+  const from = camera.position.clone();
+  const sFrom = new THREE.Spherical().setFromVector3(from);
+  const sTo = new THREE.Spherical().setFromVector3(to);
+  let dTh = sTo.theta - sFrom.theta;
+  if (dTh > Math.PI) dTh -= Math.PI * 2;
+  if (dTh < -Math.PI) dTh += Math.PI * 2;
+  anim = { t0: performance.now(), dur: 550, sFrom, dTh, dPhi: sTo.phi - sFrom.phi, dR: sTo.radius - sFrom.radius };
+}
+function markView(btn) {
+  ['vFront', 'vSide', 'vBack'].forEach((id) => $(id).setAttribute('aria-pressed', $(id) === btn ? 'true' : 'false'));
+}
+$('vFront').addEventListener('click', (e) => { setView(0); markView(e.currentTarget); });
+$('vSide').addEventListener('click', (e) => { setView(90); markView(e.currentTarget); });
+$('vBack').addEventListener('click', (e) => { setView(180); markView(e.currentTarget); });
+$('vSpin').addEventListener('click', (e) => {
+  state.spin = !state.spin;
+  controls.autoRotate = state.spin && !reduce;
+  e.currentTarget.setAttribute('aria-pressed', state.spin ? 'true' : 'false');
+});
+
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(stage);
+
+function loop(now) {
+  if (anim) {
+    const t = Math.min(1, (now - anim.t0) / anim.dur);
+    const e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+    const s = new THREE.Spherical(anim.sFrom.radius + anim.dR * e, anim.sFrom.phi + anim.dPhi * e, anim.sFrom.theta + anim.dTh * e);
+    camera.position.setFromSpherical(s).add(controls.target);
+    if (t >= 1) anim = null;
+  }
+  controls.update();
+  renderer.render(scene, camera);
+  requestAnimationFrame(loop);
+}
+
+resize();
+/* ---------- salvar projetos (neste aparelho) ---------- */
+const LS_WORK = 'ab_work_v1', LS_PROJ = 'ab_projects_v1';
+let restoring = false, saveTimer = null, currentProject = null;
+const lsGet = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+function maskToStr(m) {
+  const pk = new Uint8Array(Math.ceil(m.bits.length / 8));
+  for (let i = 0; i < m.bits.length; i++) if (m.bits[i]) pk[i >> 3] |= 128 >> (i & 7);
+  return { w: m.w, h: m.h, b: b64url(pk) };
+}
+function strToMask(o) { return unpackMask(unb64url(o.b), 0, o.w, o.h); }
+function serializeWork() {
+  const logos = [], idx = (lg) => { if (!lg) return -1; let i = logos.indexOf(lg); if (i === -1) { i = logos.length; logos.push(lg); } return i; };
+  const pack = (c) => { const o = { ...c, color: { ...c.color } }; o.logo = idx(c.logo); return o; };
+  const data = { cur: pack(snapshot()), order: order.map(pack), editIdx };
+  data.logos = logos.map(maskToStr);
+  return data;
+}
+function deserializeWork(d) {
+  const logos = (d.logos || []).map(strToMask);
+  const un = (c) => ({ ...c, logo: c.logo >= 0 ? logos[c.logo] : null });
+  order.length = 0;
+  (d.order || []).forEach((it) => order.push(un(it)));
+  restoring = true;
+  applyConfig(un(d.cur));
+  restoring = false;
+  setEditing(d.editIdx != null && d.editIdx < order.length ? d.editIdx : null);
+}
+function scheduleSave() {
+  if (restoring || EMBED || document.body.classList.contains('viewer')) return;
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    const ok = lsSet(LS_WORK, { project: currentProject, data: serializeWork() });
+    if (!ok) $('projStatus').textContent = 'Não consegui salvar automático (memória do navegador cheia ou bloqueada).';
+  }, 500);
+}
+function projects() { return lsGet(LS_PROJ) || []; }
+function renderProjects() {
+  const list = projects();
+  $('projDetails').hidden = list.length === 0;
+  $('projSummary').textContent = 'Abrir projeto salvo (' + list.length + ')';
+  const ol = $('projList'); ol.innerHTML = '';
+  list.sort((a, b) => b.t - a.t).forEach((pj) => {
+    const li = document.createElement('li');
+    if (pj.name === currentProject) li.className = 'cur';
+    const n = (pj.data.order || []).length;
+    li.innerHTML = '<span class="pn"><b></b><small></small></span><button type="button" class="op">Abrir</button><button type="button" class="del">Apagar</button>';
+    li.querySelector('b').textContent = pj.name;
+    li.querySelector('small').textContent = (n ? n + (n === 1 ? ' item · ' : ' itens · ') : '') + new Date(pj.t).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    li.querySelector('.op').addEventListener('click', () => {
+      currentProject = pj.name; $('projName').value = pj.name;
+      deserializeWork(pj.data); renderProjects();
+      $('projStatus').textContent = 'Projeto "' + pj.name + '" aberto.';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    li.querySelector('.del').addEventListener('click', (e) => {
+      const b = e.currentTarget;
+      if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Confirmar'; setTimeout(() => { b.dataset.armed = ''; b.textContent = 'Apagar'; }, 3000); return; }
+      lsSet(LS_PROJ, projects().filter((x) => x.name !== pj.name));
+      if (currentProject === pj.name) currentProject = null;
+      renderProjects();
+    });
+    ol.appendChild(li);
+  });
+}
+$('projSave').addEventListener('click', () => {
+  const name = $('projName').value.trim();
+  if (!name) { $('projStatus').textContent = 'Digite um nome para o projeto.'; $('projName').focus(); return; }
+  const list = projects().filter((x) => x.name !== name);
+  list.push({ name, t: Date.now(), data: serializeWork() });
+  if (!lsSet(LS_PROJ, list)) { $('projStatus').textContent = 'Não coube na memória do navegador. Apague projetos antigos e tente de novo.'; return; }
+  currentProject = name; scheduleSave(); renderProjects();
+  $('projStatus').textContent = 'Projeto "' + name + '" salvo às ' + new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) + '.';
+});
+$('projName').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('projSave').click(); });
+$('projNew').addEventListener('click', (e) => {
+  const b = e.currentTarget;
+  if (b.dataset.armed !== '1') { b.dataset.armed = '1'; b.textContent = 'Confirmar: começar do zero'; setTimeout(() => { b.dataset.armed = ''; b.textContent = 'Novo projeto'; }, 3000); return; }
+  b.dataset.armed = ''; b.textContent = 'Novo projeto';
+  currentProject = null; $('projName').value = '';
+  order.length = 0;
+  applyConfig({ product: 'copo', color: COLORS[0], font: 0, line1: '', line2: '', h: 10, vpos: 50, textW: null, logo: null });
+  setEditing(null); renderProjects();
+  $('projStatus').textContent = 'Projeto novo. Salvamento automático ligado neste aparelho.';
+});
+
+let shared = null;
+if (location.hash.startsWith('#p=')) {
+  try { shared = decodeOrder(await readShared(location.hash)); }
+  catch (e) { console.warn('Link de prévia inválido', e); }
+}
+if (EMBED && MODO === 'editar') {
+  let cfg = shared && shared.length ? shared[0] : null;
+  if (!cfg) {
+    const prod = QS.get('produto'), cor = (QS.get('cor') || '').trim().toLowerCase(), texto = QS.get('texto');
+    cfg = snapshot();
+    if (PRODUCTS.some((p) => p.id === prod)) cfg.product = prod;
+    const c = COLORS.find((k) => k.name.toLowerCase() === cor);
+    if (c) cfg.color = { ...c };
+    if (texto != null) { cfg.line1 = texto; cfg.line2 = ''; }
+  }
+  applyConfig(cfg);
+  setView(0, null, true);
+  $('embedBar').hidden = false;
+  const avisar = (msg) => { if (window.parent !== window) window.parent.postMessage(msg, location.origin); };
+  $('embedSave').addEventListener('click', async () => {
+    const b = $('embedSave'); b.disabled = true; b.textContent = 'Salvando…';
+    try {
+      const url = await buildShareUrl();
+      const s = snapshot(), d = describe(s);
+      avisar({ tipo: 'arts-mockup', hash: url.slice(url.indexOf('#')), titulo: d.title, desc: d.desc, produto: s.product, cor: s.color.name });
+    } finally { b.disabled = false; b.textContent = 'Salvar mockup'; }
+  });
+  $('embedCancel').addEventListener('click', () => avisar({ tipo: 'arts-mockup-cancelar' }));
+}
+else if (shared && shared.length) { enterViewer(shared); resize(); showViewerItem(0); }
+else {
+  const saved = lsGet(LS_WORK);
+  let restored = false;
+  if (saved && saved.data && saved.data.cur) {
+    try {
+      currentProject = saved.project || null;
+      $('projName').value = currentProject || '';
+      deserializeWork(saved.data);
+      restored = true;
+      $('projStatus').textContent = currentProject ? 'Continuando o projeto "' + currentProject + '".' : 'Continuando de onde você parou.';
+    } catch (e) { console.warn('Não consegui restaurar', e); }
+  }
+  if (!restored) buildProduct();
+  setView(0, null, true);
+  renderProjects();
+}
+loadFontThenDraw();
+document.fonts.ready.then(drawText);
+requestAnimationFrame(loop);
+</script>
+
+
+</body>
+</html>

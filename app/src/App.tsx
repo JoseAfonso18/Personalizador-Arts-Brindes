@@ -16,6 +16,7 @@ import { Painel } from '@/pages/Painel'
 import { PedidoDetalhe } from '@/pages/PedidoDetalhe'
 import { Pedidos } from '@/pages/Pedidos'
 import { ProdutoForm } from '@/pages/ProdutoForm'
+import { Provador } from '@/pages/Provador'
 import { Produtos } from '@/pages/Produtos'
 import { VendaRapida } from '@/pages/VendaRapida'
 
@@ -54,7 +55,8 @@ const router = createBrowserRouter([
           { path: '/pedidos', element: <Pedidos /> },
           { path: '/pedidos/:id', element: <PedidoDetalhe /> },
           { path: '/venda-rapida', element: <VendaRapida /> },
-          ...MENU.filter((m) => !['/', '/produtos', '/clientes', '/configuracoes', '/orcamentos', '/pedidos'].includes(m.caminho)).map((m) => ({ path: m.caminho, element: <EmBreve item={m} /> })),
+          { path: '/provador', element: <Provador /> },
+          ...MENU.filter((m) => !['/', '/produtos', '/clientes', '/configuracoes', '/orcamentos', '/pedidos', '/provador'].includes(m.caminho)).map((m) => ({ path: m.caminho, element: <EmBreve item={m} /> })),
           { path: '*', element: <Navigate to="/" replace /> },
         ],
       },

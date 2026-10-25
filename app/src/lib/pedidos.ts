@@ -72,7 +72,7 @@ export type Pedido = {
   created_at: string
   orcamento: { numero: number } | null
   cliente: { id: string; tipo: 'pf' | 'pj'; nome: string; nome_fantasia: string | null; celular: string | null; telefone: string | null; cidade: string | null; uf: string | null; confianca: boolean } | null
-  itens: { descricao: string; detalhe: string | null; quantidade: number; preco_unitario: number; adicional: number; item_do_cliente: boolean; ordem: number }[]
+  itens: { descricao: string; detalhe: string | null; quantidade: number; preco_unitario: number; adicional: number; item_do_cliente: boolean; ordem: number; mockup: unknown }[]
   pagamentos: { id: string; valor: number; forma: FormaPagamento; data: string; observacao: string | null; created_by: string | null }[]
   historico: { id: number; de: string | null; para: StatusPedido; em: string; por: string | null; por_nome: string | null }[]
 }
@@ -89,7 +89,7 @@ export async function buscarPedido(id: string): Promise<Pedido | null> {
   const { data, error } = await supabase
     .from('pedidos')
     .select(
-      '*, orcamento:orcamentos(numero), cliente:clientes(id, tipo, nome, nome_fantasia, celular, telefone, cidade, uf, confianca), pagamentos(id, valor, forma, data, observacao, created_by), itens:pedido_itens(descricao, detalhe, quantidade, preco_unitario, adicional, item_do_cliente, ordem), historico:pedido_historico(id, de, para, em, por, por_nome)',
+      '*, orcamento:orcamentos(numero), cliente:clientes(id, tipo, nome, nome_fantasia, celular, telefone, cidade, uf, confianca), pagamentos(id, valor, forma, data, observacao, created_by), itens:pedido_itens(descricao, detalhe, quantidade, preco_unitario, adicional, item_do_cliente, ordem, mockup), historico:pedido_historico(id, de, para, em, por, por_nome)',
     )
     .eq('id', id)
     .maybeSingle()
