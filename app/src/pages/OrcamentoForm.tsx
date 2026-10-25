@@ -27,6 +27,8 @@ import {
   type StatusOrcamento,
 } from '@/lib/orcamentos'
 import { listarProdutos, type Produto } from '@/lib/produtos'
+import { pedidoDoOrcamento } from '@/lib/pedidos'
+import { numeroPedido } from '@/lib/orcamento'
 import { carregarPublico, linkOrcamento, linkWhatsApp } from '@/lib/publico'
 import { formatarCNPJ, formatarCPF } from '@/lib/documento'
 import { cn } from '@/lib/utils'
@@ -80,6 +82,7 @@ export function OrcamentoForm() {
   const [visualizado, setVisualizado] = useState<string | null>(null)
   const [copiado, setCopiado] = useState(false)
   const [gerandoPdf, setGerandoPdf] = useState(false)
+  const [pedido, setPedido] = useState<{ id: string; numero: number } | null>(null)
   const [clienteId, setClienteId] = useState<string | null>(null)
   const [itens, setItens] = useState<ItemCampo[]>([itemVazio()])
   const [descTipo, setDescTipo] = useState<'valor' | 'percentual'>('valor')
@@ -125,6 +128,7 @@ export function OrcamentoForm() {
     setStatus(o.status ?? 'rascunho')
     setAprovadoPor(o.aprovado_por ?? null)
     setToken(o.token ?? null)
+    if (o.status === 'aprovado' && o.id) void pedidoDoOrcamento(o.id).then(setPedido)
     setVisualizado(o.visualizado_em ?? null)
     setClienteId(o.cliente_id)
     setItens(
@@ -421,6 +425,11 @@ export function OrcamentoForm() {
       {somenteLeitura && (
         <p className="bg-success-soft text-success rounded-xl px-4 py-3 text-sm">
           Aprovado{aprovadoPor ? ` por ${aprovadoPor}` : ''}. Para mudar algo, use <b>Duplicar</b> e faça um novo orçamento.
+          {pedido && (
+            <Link to={`/pedidos/${pedido.id}`} className="mt-1 block font-semibold underline">
+              Ver pedido {numeroPedido(pedido.numero)} →
+            </Link>
+          )}
         </p>
       )}
       {situacao === 'expirado' && (

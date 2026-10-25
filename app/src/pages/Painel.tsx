@@ -7,11 +7,11 @@ import { useAuth } from '@/lib/auth'
 import { formatarBRL } from '@/lib/dinheiro'
 import { formatarData, numeroOrcamento } from '@/lib/orcamento'
 import { listarOrcamentos, type LinhaLista } from '@/lib/orcamentos'
+import { listarPedidos, type LinhaPedido } from '@/lib/pedidos'
 import { testarConexao } from '@/lib/supabase'
 
 const EM_BREVE = [
   { titulo: 'A receber', texto: 'Sinais, fiado e vencidos', Icone: Wallet, cor: 'text-success bg-success-soft' },
-  { titulo: 'Em produção', texto: 'Pedidos e prazos de entrega', Icone: ClipboardList, cor: 'text-primary-strong bg-primary-soft' },
   { titulo: 'Estoque baixo', texto: 'Cores abaixo do mínimo', Icone: PackageX, cor: 'text-warning bg-warning-soft' },
   { titulo: 'Resultado do mês', texto: 'Vendeu, gastou e lucrou', Icone: TrendingUp, cor: 'text-foreground bg-muted' },
 ]
@@ -20,14 +20,19 @@ export function Painel() {
   const { perfil } = useAuth()
   const [banco, setBanco] = useState<'testando' | 'ok' | 'erro'>('testando')
   const [orcs, setOrcs] = useState<LinhaLista[] | null>(null)
+  const [peds, setPeds] = useState<LinhaPedido[] | null>(null)
   const [seteDias] = useState(() => Date.now() - 7 * 86400000)
 
   useEffect(() => {
     testarConexao().then((ok) => setBanco(ok ? 'ok' : 'erro'))
     listarOrcamentos().then(setOrcs).catch(() => setOrcs([]))
+    listarPedidos().then(setPeds).catch(() => setPeds([]))
   }, [])
 
   const aguardando = (orcs ?? []).filter((o) => o.situacao === 'enviado' || o.situacao === 'rascunho')
+  const emProducao = (peds ?? []).filter((p) => ['aprovado', 'gravando', 'pronto'].includes(p.status))
+  const atrasados = emProducao.filter((p) => p.atrasado).length
+  const prontos = emProducao.filter((p) => p.status === 'pronto').length
   const valorAguardando = aguardando.reduce((s, o) => s + o.total, 0)
   const aprovadosLink = (orcs ?? []).filter((o) => o.situacao === 'aprovado' && o.aprovado_por?.endsWith('(pelo link)') && o.aprovado_em && new Date(o.aprovado_em).getTime() > seteDias)
 
@@ -76,6 +81,21 @@ export function Painel() {
             <div className="flex items-center justify-between">
               <p className="text-muted-foreground text-xs">{orcs ? `${formatarBRL(valorAguardando)} em aberto` : 'Carregando…'}</p>
               {aguardando[0] && <span className="text-muted-foreground text-xs">vence {formatarData(aguardando.map((o) => o.validade).sort()[0])}</span>}
+            </div>
+          </Card>
+        </Link>
+        <Link to="/pedidos">
+          <Card className={`hover:border-border-strong hover:shadow-ring h-full gap-3 transition-all ${atrasados ? 'border-destructive/60' : ''}`}>
+            <div className="flex items-center gap-2.5">
+              <span className="bg-primary-soft text-primary-strong grid size-8 place-items-center rounded-lg">
+                <ClipboardList className="size-4" />
+              </span>
+              <p className="text-sm font-medium">Em produção</p>
+            </div>
+            <p className="text-2xl font-semibold tracking-tight">{peds ? emProducao.length : '—'}</p>
+            <div className="flex flex-wrap items-center justify-between gap-1">
+              <p className="text-muted-foreground text-xs">{prontos ? `${prontos} pronto${prontos > 1 ? 's' : ''} para entregar` : 'Pedidos em andamento'}</p>
+              {atrasados > 0 && <span className="bg-destructive-soft text-destructive rounded-full px-2 py-0.5 text-xs font-medium">{atrasados} atrasado{atrasados > 1 ? 's' : ''}</span>}
             </div>
           </Card>
         </Link>
