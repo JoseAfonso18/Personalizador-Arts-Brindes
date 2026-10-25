@@ -16,6 +16,7 @@ Os scripts em `migrations/` são rodados **em ordem**, uma vez cada, no painel d
 | `0009_link_publico.sql` | link público `/o/<token>`: `orcamento_publico`, `aprovar_orcamento_publico`, `registrar_visualizacao`; coluna `visualizado_em` |
 | `0010_pedidos.sql` | `pedidos` (PED-0001), `pedido_itens`, `pedido_historico`; pedido criado sozinho ao aprovar o orçamento (loja ou link); view `pedidos_lista` com atrasados |
 | `0011_pagamentos.sql` | `pagamentos` (não passa do total), `pedidos.vencimento` (fiado só p/ cliente de confiança), situação do pagamento na `pedidos_lista` |
+| `0012_venda_rapida.sql` | `venda_rapida(jsonb)`: pedido de balcão + pagamento (ou fiado) numa operação só |
 
 ## Configuração de login (uma vez)
 
