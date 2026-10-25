@@ -6,7 +6,7 @@
  * Design: estilo "Dub" (docs/DESIGN.md) com a paleta da Art's Brindes.
  * - Bordas finas de 1px definem os blocos (quase sem sombra)
  * - Inter em tudo; títulos com peso médio e letras um pouco mais juntas
- * - Um único destaque de cor: o laranja da Art's
+ * - Um único destaque de cor: o laranja da Art's (#FA5B04, tirado da logo); cinza da marca #424242
  * - Raios: 6px campos · 8px botões · 12px cards · 16px cards grandes · pílula para etiquetas
  */
 
@@ -29,12 +29,13 @@
   --border: #e5e5e5;
   --border-strong: #d4d4d4;
   --input: #d4d4d4;
-  --ring: #ea580c;
+  --ring: #fa5b04;
+  --brand-gray: #424242; /* cinza da logo */
 
-  --primary: #ea580c; /* laranja Art's: ação principal */
+  --primary: #fa5b04; /* laranja Art's: ação principal */
   --primary-foreground: #ffffff;
   --primary-soft: #fff1e6; /* fundo suave: item ativo do menu, etiquetas */
-  --primary-strong: #c2410c; /* texto laranja sobre fundo claro */
+  --primary-strong: #c94400; /* texto laranja sobre fundo claro (contraste) */
 
   --success: #16a34a;
   --success-soft: #dcfce7;
@@ -63,14 +64,15 @@
   --accent: #1c1c1c;
   --accent-foreground: #ededed;
   --border: #262626;
-  --border-strong: #404040;
-  --input: #404040;
-  --ring: #f26b1d;
+  --border-strong: #424242;
+  --input: #424242;
+  --ring: #fa5b04;
+  --brand-gray: #424242;
 
-  --primary: #f26b1d;
+  --primary: #fa5b04;
   --primary-foreground: #ffffff;
-  --primary-soft: #2a1408;
-  --primary-strong: #fb923c;
+  --primary-soft: #2b1305;
+  --primary-strong: #ff8a4c;
 
   --success: #4ade80;
   --success-soft: #052e16;
@@ -104,6 +106,7 @@
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-soft: var(--primary-soft);
   --color-primary-strong: var(--primary-strong);
+  --color-brand-gray: var(--brand-gray);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
