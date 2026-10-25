@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
-import { ClipboardList, FileText, Loader2, PackageX, TrendingUp, Wallet } from 'lucide-react'
+import { Link } from 'react-router'
+import { CheckCircle2, ClipboardList, FileText, Loader2, PackageX, TrendingUp, Wallet } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth'
+import { formatarBRL } from '@/lib/dinheiro'
+import { formatarData, numeroOrcamento } from '@/lib/orcamento'
+import { listarOrcamentos, type LinhaLista } from '@/lib/orcamentos'
 import { testarConexao } from '@/lib/supabase'
 
-const CARTOES = [
+const EM_BREVE = [
   { titulo: 'A receber', texto: 'Sinais, fiado e vencidos', Icone: Wallet, cor: 'text-success bg-success-soft' },
   { titulo: 'Em produção', texto: 'Pedidos e prazos de entrega', Icone: ClipboardList, cor: 'text-primary-strong bg-primary-soft' },
-  { titulo: 'Orçamentos aguardando', texto: 'Esperando resposta do cliente', Icone: FileText, cor: 'text-foreground bg-muted' },
   { titulo: 'Estoque baixo', texto: 'Cores abaixo do mínimo', Icone: PackageX, cor: 'text-warning bg-warning-soft' },
   { titulo: 'Resultado do mês', texto: 'Vendeu, gastou e lucrou', Icone: TrendingUp, cor: 'text-foreground bg-muted' },
 ]
@@ -16,9 +19,17 @@ const CARTOES = [
 export function Painel() {
   const { perfil } = useAuth()
   const [banco, setBanco] = useState<'testando' | 'ok' | 'erro'>('testando')
+  const [orcs, setOrcs] = useState<LinhaLista[] | null>(null)
+  const [seteDias] = useState(() => Date.now() - 7 * 86400000)
+
   useEffect(() => {
     testarConexao().then((ok) => setBanco(ok ? 'ok' : 'erro'))
+    listarOrcamentos().then(setOrcs).catch(() => setOrcs([]))
   }, [])
+
+  const aguardando = (orcs ?? []).filter((o) => o.situacao === 'enviado' || o.situacao === 'rascunho')
+  const valorAguardando = aguardando.reduce((s, o) => s + o.total, 0)
+  const aprovadosLink = (orcs ?? []).filter((o) => o.situacao === 'aprovado' && o.aprovado_por?.endsWith('(pelo link)') && o.aprovado_em && new Date(o.aprovado_em).getTime() > seteDias)
 
   return (
     <div className="space-y-6">
@@ -31,8 +42,44 @@ export function Painel() {
         {banco === 'ok' && <Badge variant="sucesso">● Banco conectado</Badge>}
         {banco === 'erro' && <Badge className="bg-destructive-soft text-destructive">● Sem conexão com o banco</Badge>}
       </header>
+
+      {aprovadosLink.length > 0 && (
+        <Card className="border-success bg-success-soft gap-2">
+          <p className="text-success flex items-center gap-2 text-sm font-semibold">
+            <CheckCircle2 className="size-4" /> Aprovados pelo cliente (últimos 7 dias)
+          </p>
+          <ul className="divide-success/20 divide-y">
+            {aprovadosLink.map((o) => (
+              <li key={o.id}>
+                <Link to={`/orcamentos/${o.id}`} className="flex items-center justify-between gap-3 py-2 text-sm hover:underline">
+                  <span className="min-w-0 truncate">
+                    <span className="text-muted-foreground font-mono text-xs">{numeroOrcamento(o.numero)}</span> {o.cliente_nome} · {o.aprovado_por?.replace(' (pelo link)', '')}
+                  </span>
+                  <span className="shrink-0 font-medium">{formatarBRL(o.total)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {CARTOES.map(({ titulo, texto, Icone, cor }) => (
+        <Link to="/orcamentos">
+          <Card className="hover:border-border-strong hover:shadow-ring h-full gap-3 transition-all">
+            <div className="flex items-center gap-2.5">
+              <span className="bg-muted grid size-8 place-items-center rounded-lg">
+                <FileText className="size-4" />
+              </span>
+              <p className="text-sm font-medium">Orçamentos aguardando</p>
+            </div>
+            <p className="text-2xl font-semibold tracking-tight">{orcs ? aguardando.length : '—'}</p>
+            <div className="flex items-center justify-between">
+              <p className="text-muted-foreground text-xs">{orcs ? `${formatarBRL(valorAguardando)} em aberto` : 'Carregando…'}</p>
+              {aguardando[0] && <span className="text-muted-foreground text-xs">vence {formatarData(aguardando.map((o) => o.validade).sort()[0])}</span>}
+            </div>
+          </Card>
+        </Link>
+        {EM_BREVE.map(({ titulo, texto, Icone, cor }) => (
           <Card key={titulo} className="gap-3">
             <div className="flex items-center gap-2.5">
               <span className={`grid size-8 place-items-center rounded-lg ${cor}`}>
@@ -40,7 +87,7 @@ export function Painel() {
               </span>
               <p className="text-sm font-medium">{titulo}</p>
             </div>
-            <p className="text-2xl font-semibold tracking-tight text-muted-foreground/60">—</p>
+            <p className="text-muted-foreground/60 text-2xl font-semibold tracking-tight">—</p>
             <div className="flex items-center justify-between">
               <p className="text-muted-foreground text-xs">{texto}</p>
               <Badge variant="outline">Em breve</Badge>

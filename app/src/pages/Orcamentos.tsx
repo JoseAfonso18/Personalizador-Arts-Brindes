@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { CalendarClock, FileText, Loader2, Plus, Search } from 'lucide-react'
+import { CalendarClock, Eye, FileText, Loader2, Plus, Search } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -123,6 +123,11 @@ export function Orcamentos() {
                 <div className="flex flex-wrap items-center gap-1.5">
                   <span className={cn('rounded-full px-2 py-0.5 text-xs font-medium', s.classe)}>{s.texto}</span>
                   {o.pede_sinal && o.situacao !== 'aprovado' && <Badge variant="outline">Sinal {formatarBRL(o.valor_sinal)}</Badge>}
+                  {o.visualizado_em && o.situacao === 'enviado' && (
+                    <Badge variant="outline">
+                      <Eye className="size-3" /> Cliente viu
+                    </Badge>
+                  )}
                   <span className="text-muted-foreground ml-auto flex items-center gap-1 text-xs">
                     <CalendarClock className="size-3" />
                     {o.situacao === 'aprovado' ? `Entrega ${formatarData(o.prazo_entrega)}` : `Vale até ${formatarData(o.validade)}`}
