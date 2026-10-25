@@ -1,3 +1,4 @@
+import { precoUnitario, type Faixa } from '@/lib/preco'
 import { dividirSinal, precisaSinal, type RegraSinal } from '@/lib/condicoes'
 
 /** Mesma conta da função orcamento_totais do banco, para mostrar ao vivo na tela. */
@@ -40,3 +41,19 @@ export function calcularTotais(d: DadosCalculo, regra: RegraSinal): Totais {
 
 export const numeroOrcamento = (n: number) => `ORC-${String(n).padStart(4, '0')}`
 export const numeroPedido = (n: number) => `PED-${String(n).padStart(4, '0')}`
+
+/** Preço sugerido do item: faixa pela quantidade total do produto no orçamento + acréscimo da cor. */
+export function precoSugerido(faixas: Faixa[], qtdTotalProduto: number, acrescimo: number): number | null {
+  return precoUnitario(faixas, qtdTotalProduto, acrescimo)
+}
+
+export function formatarData(iso: string | null | undefined): string {
+  if (!iso) return '—'
+  const [a, m, d] = iso.slice(0, 10).split('-')
+  return `${d}/${m}/${a}`
+}
+
+export function hojeISO(): string {
+  const d = new Date()
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10)
+}
