@@ -17,6 +17,7 @@ import { PedidoDetalhe } from '@/pages/PedidoDetalhe'
 import { Pedidos } from '@/pages/Pedidos'
 import { ProdutoForm } from '@/pages/ProdutoForm'
 import { Produtos } from '@/pages/Produtos'
+import { VendaRapida } from '@/pages/VendaRapida'
 
 /** Só deixa passar quem está logado; senão manda pro login. */
 function RotaProtegida() {
@@ -52,6 +53,7 @@ const router = createBrowserRouter([
           { path: '/orcamentos/:id', element: <OrcamentoForm /> },
           { path: '/pedidos', element: <Pedidos /> },
           { path: '/pedidos/:id', element: <PedidoDetalhe /> },
+          { path: '/venda-rapida', element: <VendaRapida /> },
           ...MENU.filter((m) => !['/', '/produtos', '/clientes', '/configuracoes', '/orcamentos', '/pedidos'].includes(m.caminho)).map((m) => ({ path: m.caminho, element: <EmBreve item={m} /> })),
           { path: '*', element: <Navigate to="/" replace /> },
         ],

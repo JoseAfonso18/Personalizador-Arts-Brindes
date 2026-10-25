@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
-import { CheckCircle2, ClipboardList, FileText, Loader2, PackageX, TrendingUp, Wallet } from 'lucide-react'
+import { CheckCircle2, ClipboardList, FileText, Loader2, PackageX, Plus, TrendingUp, Wallet, Zap } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card } from '@/components/ui/card'
 import { useAuth } from '@/lib/auth'
@@ -48,6 +49,19 @@ export function Painel() {
         {banco === 'ok' && <Badge variant="sucesso">● Banco conectado</Badge>}
         {banco === 'erro' && <Badge className="bg-destructive-soft text-destructive">● Sem conexão com o banco</Badge>}
       </header>
+
+      <div className="grid grid-cols-2 gap-2 sm:flex">
+        <Button asChild>
+          <Link to="/venda-rapida">
+            <Zap /> Venda rápida
+          </Link>
+        </Button>
+        <Button asChild variant="outline">
+          <Link to="/orcamentos/novo">
+            <Plus /> Novo orçamento
+          </Link>
+        </Button>
+      </div>
 
       {aprovadosLink.length > 0 && (
         <Card className="border-success bg-success-soft gap-2">
