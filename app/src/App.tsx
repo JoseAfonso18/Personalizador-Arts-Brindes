@@ -3,6 +3,7 @@ import { Loader2 } from 'lucide-react'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { AuthProvider, useAuth } from '@/lib/auth'
 import { MENU } from '@/lib/menu'
+import { TemaProvider } from '@/lib/tema'
 import { EmBreve } from '@/pages/EmBreve'
 import { Login } from '@/pages/Login'
 import { Painel } from '@/pages/Painel'
@@ -43,8 +44,10 @@ const router = createBrowserRouter([
 
 export default function App() {
   return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <TemaProvider>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </TemaProvider>
   )
 }

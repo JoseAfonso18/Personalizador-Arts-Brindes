@@ -18,8 +18,8 @@ export default defineConfig({
         short_name: "Art's Gestão",
         description: "Sistema de gestão da Art's Brindes",
         lang: 'pt-BR',
-        theme_color: '#141416',
-        background_color: '#141416',
+        theme_color: '#ffffff',
+        background_color: '#ffffff',
         display: 'standalone',
         start_url: '/',
         icons: [

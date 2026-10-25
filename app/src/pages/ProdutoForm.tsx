@@ -170,7 +170,7 @@ export function ProdutoForm() {
             <ArrowLeft />
           </Link>
         </Button>
-        <h1 className="font-display text-2xl font-bold">{editando ? 'Editar produto' : 'Novo produto'}</h1>
+        <h1 className="titulo-pagina">{editando ? 'Editar produto' : 'Novo produto'}</h1>
       </header>
 
       {/* Dados */}
@@ -192,9 +192,9 @@ export function ProdutoForm() {
                 type="button"
                 key={valor}
                 onClick={() => setTipo(valor)}
-                className={cn('rounded-lg border p-3 text-left', tipo === valor ? 'border-primary bg-primary/10' : 'text-muted-foreground')}
+                className={cn('rounded-lg border p-3 text-left', tipo === valor ? 'border-primary bg-primary-soft' : 'text-muted-foreground hover:bg-accent')}
               >
-                <p className={cn('text-sm font-medium', tipo === valor && 'text-primary')}>{titulo}</p>
+                <p className={cn('text-sm font-medium', tipo === valor && 'text-primary-strong')}>{titulo}</p>
                 <p className="text-xs">{sub}</p>
               </button>
             ))}
@@ -253,7 +253,7 @@ export function ProdutoForm() {
           <div className="space-y-3">
             {cores.length === 0 && <p className="text-muted-foreground text-sm">Nenhuma cor. Adicione pelo menos uma para controlar o estoque.</p>}
             {cores.map((c) => (
-              <div key={c.chave} className={cn('bg-secondary/40 grid grid-cols-2 gap-2 rounded-lg border p-3 sm:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_auto] sm:items-end', !c.ativo && 'opacity-60')}>
+              <div key={c.chave} className={cn('bg-muted/50 grid grid-cols-2 gap-2 rounded-xl border p-3 sm:grid-cols-[1.6fr_1fr_0.8fr_0.8fr_auto] sm:items-end', !c.ativo && 'opacity-60')}>
                 <div className="col-span-2 space-y-1 sm:col-span-1">
                   <Label className="text-muted-foreground text-xs">Cor</Label>
                   <Input placeholder="Ex.: Preto" value={c.nome} onChange={(e) => atualizarCor(c.chave, 'nome', e.target.value)} />
@@ -360,7 +360,7 @@ function Problemas({ erros, avisos }: { erros: string[]; avisos: string[] }) {
         </li>
       ))}
       {avisos.map((a) => (
-        <li key={a} className="flex gap-2 text-amber-400">
+        <li key={a} className="text-warning flex gap-2">
           <AlertTriangle className="mt-0.5 size-4 shrink-0" /> {a}
         </li>
       ))}
