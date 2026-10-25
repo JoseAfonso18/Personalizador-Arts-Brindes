@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router'
 import { ArrowLeft, Check, CheckCircle2, FileText, Loader2, MessageCircle, RotateCcw, Save, User, XCircle, Zap } from 'lucide-react'
+import { PagamentosPedido } from '@/components/PagamentosPedido'
 import { Button } from '@/components/ui/button'
 import { Card, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -206,9 +207,10 @@ export function PedidoDetalhe() {
                 <span className="text-xl font-semibold">{formatarBRL(p.total)}</span>
               </div>
               {p.valor_sinal > 0 && <Linha rotulo={`Sinal combinado (${String(p.sinal_percentual ?? '').replace('.', ',')}%)`} valor={formatarBRL(p.valor_sinal)} />}
-              <p className="text-muted-foreground pt-1 text-xs">Os pagamentos recebidos entram na próxima atualização (sinal, restante e fiado).</p>
             </div>
           </Card>
+
+          <PagamentosPedido p={p} nomes={nomes} onMudou={carregar} />
 
           {/* Dados editáveis */}
           <Card>
