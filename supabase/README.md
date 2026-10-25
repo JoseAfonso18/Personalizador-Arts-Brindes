@@ -10,6 +10,7 @@ Os scripts em `migrations/` são rodados **em ordem**, uma vez cada, no painel d
 | `0003_seguranca_funcoes.sql` | fixa o `search_path` das funções e bloqueia `criar_perfil` na API (Security Advisor) |
 | `0004_salvar_produto.sql` | `salvar_produto(jsonb)`: grava produto + faixas + cores numa operação só (tudo ou nada) |
 | `0005_clientes.sql` | `clientes` PF/PJ (CPF/CNPJ único, aceita CNPJ alfanumérico), endereço, cliente de confiança |
+| `0006_configuracoes.sql` | `configuracoes` (linha única): regra e percentual do sinal, validade, formas de pagamento, textos das condições, dados da loja |
 
 ## Configuração de login (uma vez)
 
