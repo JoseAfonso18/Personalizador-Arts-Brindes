@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router'
-import { ArrowLeft, Check, CheckCircle2, FileText, Loader2, MessageCircle, RotateCcw, Save, User, XCircle, Zap } from 'lucide-react'
+import { Link, useNavigate, useParams } from 'react-router'
+import { ArrowLeft, Check, CheckCircle2, Copy, FileText, Loader2, MessageCircle, RotateCcw, Save, User, XCircle, Zap } from 'lucide-react'
+import { AnexosPedido } from '@/components/Anexos'
 import { PagamentosPedido } from '@/components/PagamentosPedido'
+import { repetirPedido } from '@/lib/anexos'
 import { Button } from '@/components/ui/button'
 import { Card, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -26,6 +28,20 @@ export function PedidoDetalhe() {
   const [aviso, setAviso] = useState<string | null>(null)
   const [confirmarCancelar, setConfirmarCancelar] = useState(false)
   const [hoje] = useState(hojeISO)
+  const navigate = useNavigate()
+  const [repetindo, setRepetindo] = useState(false)
+
+  async function repetir() {
+    setRepetindo(true)
+    setErro(null)
+    try {
+      const orc = await repetirPedido(id)
+      navigate(`/orcamentos/${orc}`)
+    } catch (e) {
+      setErro((e as Error).message)
+      setRepetindo(false)
+    }
+  }
 
   async function carregar() {
     try {
@@ -212,6 +228,8 @@ export function PedidoDetalhe() {
 
           <PagamentosPedido p={p} nomes={nomes} onMudou={carregar} />
 
+          <AnexosPedido pedidoId={p.id} />
+
           {/* Dados editáveis */}
           <Card>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -291,6 +309,15 @@ export function PedidoDetalhe() {
               ))}
             </ol>
           </Card>
+
+          {p.cliente_id && (
+            <Card className="gap-2">
+              <Button variant="outline" onClick={repetir} disabled={repetindo}>
+                {repetindo ? <Loader2 className="animate-spin" /> : <Copy />} Repetir pedido
+              </Button>
+              <p className="text-muted-foreground text-xs">Cria um orçamento novo igual (itens, o que gravar e arquivos) com os preços de hoje.</p>
+            </Card>
+          )}
 
           {!cancelado && p.status !== 'entregue' && (
             <div className="flex justify-end">
