@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { ArrowLeft, Ban, CheckCircle2, Copy, ExternalLink, Eye, Link2, Loader2, MessageCircle, Plus, RefreshCw, RotateCcw, Send, Trash2, UserPlus, Wand2 } from 'lucide-react'
+import { ArrowLeft, Ban, CheckCircle2, Copy, ExternalLink, Eye, FileDown, Link2, Loader2, MessageCircle, Plus, RefreshCw, RotateCcw, Send, Trash2, UserPlus, Wand2 } from 'lucide-react'
 import { Seletor, type OpcaoSeletor } from '@/components/Seletor'
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,7 +27,8 @@ import {
   type StatusOrcamento,
 } from '@/lib/orcamentos'
 import { listarProdutos, type Produto } from '@/lib/produtos'
-import { linkOrcamento, linkWhatsApp } from '@/lib/publico'
+import { carregarPublico, linkOrcamento, linkWhatsApp } from '@/lib/publico'
+import { formatarCNPJ, formatarCPF } from '@/lib/documento'
 import { cn } from '@/lib/utils'
 
 type ItemCampo = {
@@ -78,6 +79,7 @@ export function OrcamentoForm() {
   const [token, setToken] = useState<string | null>(null)
   const [visualizado, setVisualizado] = useState<string | null>(null)
   const [copiado, setCopiado] = useState(false)
+  const [gerandoPdf, setGerandoPdf] = useState(false)
   const [clienteId, setClienteId] = useState<string | null>(null)
   const [itens, setItens] = useState<ItemCampo[]>([itemVazio()])
   const [descTipo, setDescTipo] = useState<'valor' | 'percentual'>('valor')
@@ -369,6 +371,27 @@ export function OrcamentoForm() {
       setStatus('enviado')
     }
   }
+  async function baixarPdf() {
+    if (!token) return
+    setGerandoPdf(true)
+    setErro(null)
+    try {
+      const dados = await carregarPublico(token)
+      if (!dados) throw new Error('Salve o orçamento antes de gerar o PDF.')
+      const doc = cliente?.cpf_cnpj ? (cliente.tipo === 'pj' ? `CNPJ ${formatarCNPJ(cliente.cpf_cnpj)}` : `CPF ${formatarCPF(cliente.cpf_cnpj)}`) : null
+      const endereco = [cliente?.logradouro && `${cliente.logradouro}${cliente.numero ? `, ${cliente.numero}` : ''}`, cliente?.bairro, cliente?.cidade && `${cliente.cidade}${cliente.uf ? ` - ${cliente.uf}` : ''}`]
+        .filter(Boolean)
+        .join(' · ')
+      const detalhe = [cliente?.tipo === 'pj' && cliente.nome_fantasia ? cliente.nome : null, doc, endereco || null, cliente?.celular || cliente?.telefone || null].filter(Boolean) as string[]
+      const { baixarPdfOrcamento } = await import('@/lib/pdf')
+      await baixarPdfOrcamento({ ...dados, cliente_detalhe: detalhe })
+    } catch (err) {
+      setErro((err as Error).message)
+    } finally {
+      setGerandoPdf(false)
+    }
+  }
+
   async function copiarLink() {
     try {
       await navigator.clipboard.writeText(link)
@@ -719,6 +742,9 @@ export function OrcamentoForm() {
                       </a>
                     </Button>
                   </div>
+                  <Button type="button" variant="outline" onClick={baixarPdf} disabled={gerandoPdf}>
+                    {gerandoPdf ? <Loader2 className="animate-spin" /> : <FileDown />} PDF
+                  </Button>
                   <a href={link} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs">
                     <ExternalLink className="size-3" /> Ver como o cliente vê
                   </a>

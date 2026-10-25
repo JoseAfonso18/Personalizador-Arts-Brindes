@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { useParams } from 'react-router'
-import { AlertTriangle, AtSign, CalendarClock, CheckCircle2, Loader2, MapPin, MessageCircle, Phone, XCircle } from 'lucide-react'
+import { AlertTriangle, AtSign, CalendarClock, CheckCircle2, FileDown, Loader2, MapPin, MessageCircle, Phone, XCircle } from 'lucide-react'
 import { Logo } from '@/components/Logo'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -22,6 +22,18 @@ export function OrcamentoPublico() {
   const [erroAprovar, setErroAprovar] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
   const [acabouDeAprovar, setAcabouDeAprovar] = useState(false)
+  const [gerandoPdf, setGerandoPdf] = useState(false)
+
+  async function baixarPdf() {
+    if (!o) return
+    setGerandoPdf(true)
+    try {
+      const { baixarPdfOrcamento } = await import('@/lib/pdf')
+      await baixarPdfOrcamento(o)
+    } finally {
+      setGerandoPdf(false)
+    }
+  }
 
   useEffect(() => {
     carregarPublico(token)
@@ -239,6 +251,10 @@ export function OrcamentoPublico() {
             </a>
           </Button>
         )}
+
+        <Button variant="ghost" className="text-muted-foreground w-full" onClick={baixarPdf} disabled={gerandoPdf}>
+          {gerandoPdf ? <Loader2 className="animate-spin" /> : <FileDown />} Baixar PDF do orçamento
+        </Button>
 
         {/* Rodapé da loja */}
         {loja && (
