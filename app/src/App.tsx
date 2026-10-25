@@ -6,6 +6,8 @@ import { MENU } from '@/lib/menu'
 import { EmBreve } from '@/pages/EmBreve'
 import { Login } from '@/pages/Login'
 import { Painel } from '@/pages/Painel'
+import { ProdutoForm } from '@/pages/ProdutoForm'
+import { Produtos } from '@/pages/Produtos'
 
 /** Só deixa passar quem está logado; senão manda pro login. */
 function RotaProtegida() {
@@ -28,7 +30,10 @@ const router = createBrowserRouter([
         element: <AppLayout />,
         children: [
           { index: true, element: <Painel /> },
-          ...MENU.filter((m) => m.caminho !== '/').map((m) => ({ path: m.caminho, element: <EmBreve item={m} /> })),
+          { path: '/produtos', element: <Produtos /> },
+          { path: '/produtos/novo', element: <ProdutoForm /> },
+          { path: '/produtos/:id', element: <ProdutoForm /> },
+          ...MENU.filter((m) => !['/', '/produtos'].includes(m.caminho)).map((m) => ({ path: m.caminho, element: <EmBreve item={m} /> })),
           { path: '*', element: <Navigate to="/" replace /> },
         ],
       },
