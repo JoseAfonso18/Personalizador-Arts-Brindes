@@ -17,6 +17,7 @@ Os scripts em `migrations/` são rodados **em ordem**, uma vez cada, no painel d
 | `0010_pedidos.sql` | `pedidos` (PED-0001), `pedido_itens`, `pedido_historico`; pedido criado sozinho ao aprovar o orçamento (loja ou link); view `pedidos_lista` com atrasados |
 | `0011_pagamentos.sql` | `pagamentos` (não passa do total), `pedidos.vencimento` (fiado só p/ cliente de confiança), situação do pagamento na `pedidos_lista` |
 | `0012_venda_rapida.sql` | `venda_rapida(jsonb)`: pedido de balcão + pagamento (ou fiado) numa operação só |
+| `0013_anexos_repetir.sql` | Pasta privada `anexos` no Storage + tabela `anexos` (arquivos do pedido/cliente); `repetir_pedido(uuid)` cria orçamento igual com preços de hoje e o pedido novo herda os arquivos |
 
 ## Configuração de login (uma vez)
 

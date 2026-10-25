@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ArrowLeft, Building2, CheckCircle2, Loader2, Search, ShieldCheck, Trash2, User } from 'lucide-react'
+import { AnexosCliente } from '@/components/Anexos'
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -405,6 +406,8 @@ export function ClienteForm() {
           Ativo
         </label>
       </Card>
+
+      {id && <AnexosCliente clienteId={id} />}
 
       {tentouSalvar && erros.length > 0 && (
         <ul className="text-destructive space-y-1 text-sm">
