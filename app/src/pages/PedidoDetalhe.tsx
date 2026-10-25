@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from 'react-router'
 import { ArrowLeft, Check, CheckCircle2, Copy, FileText, Loader2, MessageCircle, RotateCcw, Save, User, XCircle, Zap } from 'lucide-react'
 import { AnexosPedido } from '@/components/Anexos'
 import { PagamentosPedido } from '@/components/PagamentosPedido'
+import { BotaoVer3D } from '@/components/Provador3D'
+import { lerMockup } from '@/lib/mockup'
 import { repetirPedido } from '@/lib/anexos'
 import { Button } from '@/components/ui/button'
 import { Card, CardTitle } from '@/components/ui/card'
@@ -85,7 +87,11 @@ export function PedidoDetalhe() {
     setSalvando(true)
     setErro(null)
     try {
-      await atualizarPedido(id, { prazo_entrega: prazo || null, nota_venda: nota.trim() || null, observacao: obs.trim() || null })
+      await atualizarPedido(id, {
+        prazo_entrega: prazo || null,
+        nota_venda: nota.trim() || null,
+        observacao: obs.trim() || null,
+      })
       await carregar()
       setAviso('Dados do pedido salvos.')
     } catch (e) {
@@ -170,11 +176,7 @@ export function PedidoDetalhe() {
                     )}
                   >
                     <span
-                      className={cn(
-                        'grid size-7 place-items-center rounded-full border text-[11px]',
-                        feito && 'bg-success border-success text-white',
-                        atual && 'bg-primary border-primary text-white',
-                      )}
+                      className={cn('grid size-7 place-items-center rounded-full border text-[11px]', feito && 'bg-success border-success text-white', atual && 'bg-primary border-primary text-white')}
                     >
                       {feito ? <Check className="size-3.5" /> : i + 1}
                     </span>
@@ -209,6 +211,10 @@ export function PedidoDetalhe() {
                     </p>
                     {i.detalhe && <p className="text-muted-foreground text-sm whitespace-pre-line">{i.detalhe}</p>}
                     {i.item_do_cliente && <p className="text-muted-foreground text-xs">Peça do cliente</p>}
+                    {(() => {
+                      const m = lerMockup(i.mockup)
+                      return m ? <BotaoVer3D mockup={m} /> : null
+                    })()}
                   </div>
                   <p className="shrink-0 text-sm">{formatarBRL(i.quantidade * (i.preco_unitario + i.adicional))}</p>
                 </div>
@@ -302,7 +308,11 @@ export function PedidoDetalhe() {
                       )}
                     </p>
                     <p className="text-muted-foreground text-xs">
-                      {quem(h)} · {formatarData(h.em)} {new Date(h.em).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                      {quem(h)} · {formatarData(h.em)}{' '}
+                      {new Date(h.em).toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </p>
                   </div>
                 </li>

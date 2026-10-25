@@ -2,11 +2,13 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useParams } from 'react-router'
 import { AlertTriangle, AtSign, CalendarClock, CheckCircle2, FileDown, Loader2, MapPin, MessageCircle, Phone, XCircle } from 'lucide-react'
 import { Logo } from '@/components/Logo'
+import { BotaoVer3D } from '@/components/Provador3D'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { montarTexto } from '@/lib/condicoes'
+import { lerMockup } from '@/lib/mockup'
 import { formatarBRL } from '@/lib/dinheiro'
 import { formatarData, numeroOrcamento } from '@/lib/orcamento'
 import { aprovarPublico, carregarPublico, linkWhatsApp, registrarVisualizacao, type OrcamentoPublico as Dados } from '@/lib/publico'
@@ -115,8 +117,8 @@ export function OrcamentoPublico() {
               <p className="font-semibold">{acabouDeAprovar ? 'Orçamento aprovado! Obrigado.' : 'Orçamento aprovado'}</p>
               <p>
                 {o.aprovado_por ? `Aprovado por ${o.aprovado_por.replace(' (pelo link)', '').replace(/ \(pela loja\)$/, '')}` : 'Aprovado'}
-                {o.aprovado_em ? ` em ${formatarData(o.aprovado_em)}` : ''}.
-                {t.pede_sinal ? ` Para iniciar a produção, faça a entrada de ${formatarBRL(t.valor_sinal)}.` : ''} A loja vai falar com você.
+                {o.aprovado_em ? ` em ${formatarData(o.aprovado_em)}` : ''}.{t.pede_sinal ? ` Para iniciar a produção, faça a entrada de ${formatarBRL(t.valor_sinal)}.` : ''} A loja vai falar com
+                você.
               </p>
             </div>
           </Card>
@@ -162,16 +164,22 @@ export function OrcamentoPublico() {
             {o.itens.map((i, n) => {
               const unit = i.preco_unitario + i.adicional
               return (
-                <div key={n} className="flex gap-3 p-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium">{i.descricao}</p>
-                    {i.detalhe && <p className="text-muted-foreground text-sm whitespace-pre-line">{i.detalhe}</p>}
-                    <p className="text-muted-foreground mt-1 text-xs">
-                      {i.quantidade} un × {formatarBRL(unit)}
-                      {i.item_do_cliente ? ' · gravação em peça sua' : ''}
-                    </p>
+                <div key={n} className="p-3">
+                  <div className="flex gap-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">{i.descricao}</p>
+                      {i.detalhe && <p className="text-muted-foreground text-sm whitespace-pre-line">{i.detalhe}</p>}
+                      <p className="text-muted-foreground mt-1 text-xs">
+                        {i.quantidade} un × {formatarBRL(unit)}
+                        {i.item_do_cliente ? ' · gravação em peça sua' : ''}
+                      </p>
+                    </div>
+                    <p className="shrink-0 font-semibold">{formatarBRL(i.quantidade * unit)}</p>
                   </div>
-                  <p className="shrink-0 font-semibold">{formatarBRL(i.quantidade * unit)}</p>
+                  {(() => {
+                    const m = lerMockup(i.mockup)
+                    return m ? <BotaoVer3D mockup={m} aberto={o.itens.findIndex((x) => lerMockup(x.mockup)) === n} /> : null
+                  })()}
                 </div>
               )
             })}
@@ -223,7 +231,8 @@ export function OrcamentoPublico() {
                 </div>
                 <p className="text-muted-foreground text-xs">
                   Ao aprovar você concorda com os itens, valores e condições acima ({formatarBRL(t.total)}
-                  {t.pede_sinal ? `, entrada de ${formatarBRL(t.valor_sinal)}` : ''}).
+                  {t.pede_sinal ? `, entrada de ${formatarBRL(t.valor_sinal)}` : ''}
+                  ).
                 </p>
                 {erroAprovar && <p className="text-destructive text-sm">{erroAprovar}</p>}
                 <div className="flex gap-2">

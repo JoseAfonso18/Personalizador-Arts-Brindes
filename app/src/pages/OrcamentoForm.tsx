@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { ArrowLeft, Ban, CheckCircle2, Copy, ExternalLink, Eye, FileDown, Link2, Loader2, MessageCircle, Plus, RefreshCw, RotateCcw, Send, Trash2, UserPlus, Wand2 } from 'lucide-react'
+import { ArrowLeft, Ban, Box, CheckCircle2, Copy, ExternalLink, Eye, FileDown, Link2, Loader2, MessageCircle, Plus, RefreshCw, RotateCcw, Send, Trash2, UserPlus, Wand2 } from 'lucide-react'
 import { Seletor, type OpcaoSeletor } from '@/components/Seletor'
+import { BotaoVer3D, Provador3DModal } from '@/components/Provador3D'
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -14,19 +15,9 @@ import { lerConfiguracoes, type Configuracoes } from '@/lib/configuracoes'
 import { formatarBRL, lerValor, valorParaCampo } from '@/lib/dinheiro'
 import { formatarTelefone } from '@/lib/documento'
 import { calcularTotais, formatarData, numeroOrcamento, precoSugerido } from '@/lib/orcamento'
-import {
-  buscarOrcamento,
-  duplicarOrcamento,
-  excluirOrcamento,
-  mudarStatus,
-  renovarOrcamento,
-  salvarOrcamento,
-  SITUACOES,
-  type Orcamento,
-  type Situacao,
-  type StatusOrcamento,
-} from '@/lib/orcamentos'
+import { buscarOrcamento, duplicarOrcamento, excluirOrcamento, mudarStatus, renovarOrcamento, salvarOrcamento, SITUACOES, type Orcamento, type Situacao, type StatusOrcamento } from '@/lib/orcamentos'
 import { listarProdutos, type Produto } from '@/lib/produtos'
+import { lerMockup, modeloDoProduto, textoInicial } from '@/lib/mockup'
 import { pedidoDoOrcamento } from '@/lib/pedidos'
 import { numeroPedido } from '@/lib/orcamento'
 import { carregarPublico, linkOrcamento, linkWhatsApp } from '@/lib/publico'
@@ -85,6 +76,7 @@ export function OrcamentoForm() {
   const [pedido, setPedido] = useState<{ id: string; numero: number } | null>(null)
   const [clienteId, setClienteId] = useState<string | null>(null)
   const [itens, setItens] = useState<ItemCampo[]>([itemVazio()])
+  const [mockupDe, setMockupDe] = useState<number | null>(null)
   const [descTipo, setDescTipo] = useState<'valor' | 'percentual'>('valor')
   const [descValor, setDescValor] = useState('')
   const [descMotivo, setDescMotivo] = useState('')
@@ -101,7 +93,11 @@ export function OrcamentoForm() {
   const [aviso, setAviso] = useState<string | null>(null)
   const [tentou, setTentou] = useState(false)
   const [confirmarExclusao, setConfirmarExclusao] = useState(false)
-  const [novoCliente, setNovoCliente] = useState<{ nome: string; celular: string; tipo: 'pf' | 'pj' } | null>(null)
+  const [novoCliente, setNovoCliente] = useState<{
+    nome: string
+    celular: string
+    tipo: 'pf' | 'pj'
+  } | null>(null)
 
   const somenteLeitura = status === 'aprovado'
 
@@ -175,10 +171,18 @@ export function OrcamentoForm() {
   }
   const precoEfetivo = (i: ItemCampo) => (i.precoManual || !i.produto_id ? lerValor(i.preco) : sugerido(i))
 
-  const regra = cfg ?? { sinal_percentual: 50, sinal_valor_minimo: null, sinal_qtd_minima: null }
+  const regra = cfg ?? {
+    sinal_percentual: 50,
+    sinal_valor_minimo: null,
+    sinal_qtd_minima: null,
+  }
   const totais = calcularTotais(
     {
-      itens: itens.map((i) => ({ quantidade: Number(i.quantidade) || 0, preco_unitario: precoEfetivo(i) ?? 0, adicional: lerValor(i.adicional) ?? 0 })),
+      itens: itens.map((i) => ({
+        quantidade: Number(i.quantidade) || 0,
+        preco_unitario: precoEfetivo(i) ?? 0,
+        adicional: lerValor(i.adicional) ?? 0,
+      })),
       desconto_tipo: descTipo,
       desconto_valor: lerValor(descValor) ?? 0,
       frete_valor: lerValor(freteValor) ?? 0,
@@ -221,7 +225,14 @@ export function OrcamentoForm() {
   }
 
   function escolherProduto(k: number, valor: string) {
-    if (valor === AVULSO) return atualizarItem(k, { produto_id: null, variacao_id: null, descricao: '', precoManual: true, item_do_cliente: false })
+    if (valor === AVULSO)
+      return atualizarItem(k, {
+        produto_id: null,
+        variacao_id: null,
+        descricao: '',
+        precoManual: true,
+        item_do_cliente: false,
+      })
     const p = produtoPorId.get(valor)
     if (!p) return
     const coresAtivas = p.variacoes.filter((v) => v.ativo)
@@ -238,7 +249,10 @@ export function OrcamentoForm() {
   function escolherCor(i: ItemCampo, variacaoId: string) {
     const p = i.produto_id ? produtoPorId.get(i.produto_id) : undefined
     const v = p?.variacoes.find((x) => x.id === variacaoId)
-    atualizarItem(i.chave, { variacao_id: variacaoId || null, descricao: p ? (v ? `${p.nome} — ${v.nome}` : p.nome) : i.descricao })
+    atualizarItem(i.chave, {
+      variacao_id: variacaoId || null,
+      descricao: p ? (v ? `${p.nome} — ${v.nome}` : p.nome) : i.descricao,
+    })
   }
 
   function montar(): Orcamento {
@@ -350,8 +364,16 @@ export function OrcamentoForm() {
   const opcoesProdutos: OpcaoSeletor[] = [
     ...produtos
       .filter((p) => p.ativo)
-      .map((p) => ({ valor: p.id!, rotulo: p.nome, detalhe: p.tipo === 'servico_gravacao' ? 'Serviço de gravação (item do cliente)' : `${p.variacoes.length} cores` })),
-    { valor: AVULSO, rotulo: 'Item avulso (sem cadastro)', detalhe: 'Descrição e preço digitados à mão' },
+      .map((p) => ({
+        valor: p.id!,
+        rotulo: p.nome,
+        detalhe: p.tipo === 'servico_gravacao' ? 'Serviço de gravação (item do cliente)' : `${p.variacoes.length} cores`,
+      })),
+    {
+      valor: AVULSO,
+      rotulo: 'Item avulso (sem cadastro)',
+      detalhe: 'Descrição e preço digitados à mão',
+    },
   ]
 
   if (carregando)
@@ -383,7 +405,11 @@ export function OrcamentoForm() {
       const dados = await carregarPublico(token)
       if (!dados) throw new Error('Salve o orçamento antes de gerar o PDF.')
       const doc = cliente?.cpf_cnpj ? (cliente.tipo === 'pj' ? `CNPJ ${formatarCNPJ(cliente.cpf_cnpj)}` : `CPF ${formatarCPF(cliente.cpf_cnpj)}`) : null
-      const endereco = [cliente?.logradouro && `${cliente.logradouro}${cliente.numero ? `, ${cliente.numero}` : ''}`, cliente?.bairro, cliente?.cidade && `${cliente.cidade}${cliente.uf ? ` - ${cliente.uf}` : ''}`]
+      const endereco = [
+        cliente?.logradouro && `${cliente.logradouro}${cliente.numero ? `, ${cliente.numero}` : ''}`,
+        cliente?.bairro,
+        cliente?.cidade && `${cliente.cidade}${cliente.uf ? ` - ${cliente.uf}` : ''}`,
+      ]
         .filter(Boolean)
         .join(' · ')
       const detalhe = [cliente?.tipo === 'pj' && cliente.nome_fantasia ? cliente.nome : null, doc, endereco || null, cliente?.celular || cliente?.telefone || null].filter(Boolean) as string[]
@@ -409,6 +435,26 @@ export function OrcamentoForm() {
 
   return (
     <form onSubmit={salvar} className="mx-auto max-w-6xl space-y-5 pb-40 md:pb-0">
+      {(() => {
+        const it = itens.find((x) => x.chave === mockupDe)
+        if (!it) return null
+        const p = it.produto_id ? produtoPorId.get(it.produto_id) : undefined
+        const cor = p?.variacoes.find((v) => v.id === it.variacao_id)?.nome
+        return (
+          <Provador3DModal
+            titulo={it.descricao || p?.nome || 'Item'}
+            produto={modeloDoProduto(p?.nome ?? it.descricao)}
+            cor={cor}
+            texto={textoInicial(it.detalhe)}
+            mockup={lerMockup(it.mockup)}
+            onFechar={() => setMockupDe(null)}
+            onSalvar={(m) => {
+              atualizarItem(it.chave, { mockup: m })
+              setMockupDe(null)
+            }}
+          />
+        )
+      })()}
       <header className="flex flex-wrap items-center gap-2">
         <Button variant="ghost" size="icon" asChild>
           <Link to="/orcamentos" aria-label="Voltar">
@@ -462,7 +508,8 @@ export function OrcamentoForm() {
                     }}
                     className="hover:bg-accent text-primary-strong flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium"
                   >
-                    <UserPlus className="size-4" /> Cadastrar novo cliente{termo ? ` "${termo}"` : ''}
+                    <UserPlus className="size-4" /> Cadastrar novo cliente
+                    {termo ? ` "${termo}"` : ''}
                   </button>
                 )}
               />
@@ -483,7 +530,17 @@ export function OrcamentoForm() {
                   ))}
                 </div>
                 <Input placeholder="Nome" value={novoCliente.nome} onChange={(e) => setNovoCliente({ ...novoCliente, nome: e.target.value })} />
-                <Input placeholder="Celular / WhatsApp" inputMode="tel" value={novoCliente.celular} onChange={(e) => setNovoCliente({ ...novoCliente, celular: formatarTelefone(e.target.value) })} />
+                <Input
+                  placeholder="Celular / WhatsApp"
+                  inputMode="tel"
+                  value={novoCliente.celular}
+                  onChange={(e) =>
+                    setNovoCliente({
+                      ...novoCliente,
+                      celular: formatarTelefone(e.target.value),
+                    })
+                  }
+                />
                 <div className="flex gap-2">
                   <Button type="button" variant="ghost" onClick={() => setNovoCliente(null)}>
                     Cancelar
@@ -516,12 +573,7 @@ export function OrcamentoForm() {
                     <div className="flex items-center gap-2">
                       <span className="bg-card text-muted-foreground grid size-6 shrink-0 place-items-center rounded-full border text-xs">{n + 1}</span>
                       <div className="min-w-0 flex-1">
-                        <Seletor
-                          opcoes={opcoesProdutos}
-                          valor={i.produto_id ?? (avulso ? AVULSO : null)}
-                          onChange={(v) => escolherProduto(i.chave, v)}
-                          placeholder="Escolher produto…"
-                        />
+                        <Seletor opcoes={opcoesProdutos} valor={i.produto_id ?? (avulso ? AVULSO : null)} onChange={(v) => escolherProduto(i.chave, v)} placeholder="Escolher produto…" />
                       </div>
                       {!somenteLeitura && (
                         <Button type="button" variant="ghost" size="icon" aria-label="Remover item" onClick={() => setItens((xs) => xs.filter((x) => x.chave !== i.chave))}>
@@ -530,9 +582,7 @@ export function OrcamentoForm() {
                       )}
                     </div>
 
-                    {!i.produto_id && avulso && (
-                      <Input placeholder="Descrição do item" value={i.descricao} onChange={(e) => atualizarItem(i.chave, { descricao: e.target.value })} />
-                    )}
+                    {!i.produto_id && avulso && <Input placeholder="Descrição do item" value={i.descricao} onChange={(e) => atualizarItem(i.chave, { descricao: e.target.value })} />}
 
                     <div className="grid grid-cols-2 gap-2 sm:grid-cols-[1.4fr_0.8fr_1.1fr_1fr]">
                       {p && p.tipo === 'produto' && p.variacoes.length > 0 ? (
@@ -558,7 +608,16 @@ export function OrcamentoForm() {
                         <div className="hidden sm:block" />
                       )}
                       <Campo label="Qtd" htmlFor={`qtd-${i.chave}`}>
-                        <Input id={`qtd-${i.chave}`} inputMode="numeric" value={i.quantidade} onChange={(e) => atualizarItem(i.chave, { quantidade: e.target.value.replace(/\D/g, '') })} />
+                        <Input
+                          id={`qtd-${i.chave}`}
+                          inputMode="numeric"
+                          value={i.quantidade}
+                          onChange={(e) =>
+                            atualizarItem(i.chave, {
+                              quantidade: e.target.value.replace(/\D/g, ''),
+                            })
+                          }
+                        />
                       </Campo>
                       <Campo label="Preço unit." htmlFor={`preco-${i.chave}`}>
                         <div className="relative">
@@ -568,13 +627,23 @@ export function OrcamentoForm() {
                             className="pr-8"
                             placeholder={sug != null ? valorParaCampo(sug) : '0,00'}
                             value={i.precoManual || !i.produto_id ? i.preco : sug != null ? valorParaCampo(sug) : ''}
-                            onChange={(e) => atualizarItem(i.chave, { preco: e.target.value, precoManual: true })}
+                            onChange={(e) =>
+                              atualizarItem(i.chave, {
+                                preco: e.target.value,
+                                precoManual: true,
+                              })
+                            }
                           />
                           {i.produto_id && i.precoManual && !somenteLeitura && (
                             <button
                               type="button"
                               title="Voltar ao preço da tabela"
-                              onClick={() => atualizarItem(i.chave, { precoManual: false, preco: '' })}
+                              onClick={() =>
+                                atualizarItem(i.chave, {
+                                  precoManual: false,
+                                  preco: '',
+                                })
+                              }
                               className="text-muted-foreground hover:text-primary absolute top-1/2 right-2 -translate-y-1/2"
                             >
                               <Wand2 className="size-4" />
@@ -590,11 +659,11 @@ export function OrcamentoForm() {
                     </div>
 
                     {p && !i.precoManual && sug != null && totalProduto !== qtd && (
-                      <p className="text-muted-foreground text-xs">Faixa pela quantidade total de {p.nome}: {totalProduto} un.</p>
+                      <p className="text-muted-foreground text-xs">
+                        Faixa pela quantidade total de {p.nome}: {totalProduto} un.
+                      </p>
                     )}
-                    {i.produto_id && i.precoManual && sug != null && efetivo !== sug && (
-                      <p className="text-warning text-xs">Preço digitado à mão (tabela: {formatarBRL(sug)}).</p>
-                    )}
+                    {i.produto_id && i.precoManual && sug != null && efetivo !== sug && <p className="text-warning text-xs">Preço digitado à mão (tabela: {formatarBRL(sug)}).</p>}
 
                     <div className="grid gap-2 sm:grid-cols-[1fr_160px]">
                       <Textarea
@@ -605,10 +674,21 @@ export function OrcamentoForm() {
                         className="min-h-0"
                       />
                       <Campo label="Adicional / un (opcional)" htmlFor={`adic-${i.chave}`}>
-                        <Input id={`adic-${i.chave}`} inputMode="decimal" placeholder="ex.: 2ª face" value={i.adicional} onChange={(e) => atualizarItem(i.chave, { adicional: e.target.value })} />
+                        <Input
+                          id={`adic-${i.chave}`}
+                          inputMode="decimal"
+                          placeholder="ex.: 2ª face"
+                          value={i.adicional}
+                          onChange={(e) =>
+                            atualizarItem(i.chave, {
+                              adicional: e.target.value,
+                            })
+                          }
+                        />
                       </Campo>
                     </div>
                     {i.item_do_cliente && <p className="text-muted-foreground text-xs">Item trazido pelo cliente (não mexe no estoque).</p>}
+                    <ItemMockup mockup={i.mockup} somenteLeitura={somenteLeitura} onMontar={() => setMockupDe(i.chave)} onRemover={() => atualizarItem(i.chave, { mockup: null })} />
                   </div>
                 )
               })}
@@ -644,7 +724,12 @@ export function OrcamentoForm() {
                   <Input id="desc" inputMode="decimal" placeholder="0" value={descValor} onChange={(e) => setDescValor(e.target.value)} />
                 </div>
                 {(lerValor(descValor) ?? 0) > 0 && (
-                  <Input placeholder="Motivo do desconto (obrigatório)" value={descMotivo} onChange={(e) => setDescMotivo(e.target.value)} className={cn(tentou && !descMotivo.trim() && 'border-destructive')} />
+                  <Input
+                    placeholder="Motivo do desconto (obrigatório)"
+                    value={descMotivo}
+                    onChange={(e) => setDescMotivo(e.target.value)}
+                    className={cn(tentou && !descMotivo.trim() && 'border-destructive')}
+                  />
                 )}
               </div>
               <div className="space-y-2">
@@ -690,7 +775,14 @@ export function OrcamentoForm() {
                 </div>
                 {sinalModo !== 'sem' && (
                   <div className="relative">
-                    <Input aria-label="Percentual do sinal" inputMode="decimal" className="pr-10" placeholder={`${cfg?.sinal_percentual ?? 50} (padrão)`} value={sinalPct} onChange={(e) => setSinalPct(e.target.value)} />
+                    <Input
+                      aria-label="Percentual do sinal"
+                      inputMode="decimal"
+                      className="pr-10"
+                      placeholder={`${cfg?.sinal_percentual ?? 50} (padrão)`}
+                      value={sinalPct}
+                      onChange={(e) => setSinalPct(e.target.value)}
+                    />
                     <span className="text-muted-foreground absolute top-1/2 right-3 -translate-y-1/2 text-sm">%</span>
                   </div>
                 )}
@@ -880,6 +972,35 @@ function Linha({ rotulo, valor, classe }: { rotulo: string; valor: string; class
     <div className="flex items-center justify-between text-sm">
       <span className="text-muted-foreground">{rotulo}</span>
       <span className={classe}>{valor}</span>
+    </div>
+  )
+}
+
+function ItemMockup({ mockup, somenteLeitura, onMontar, onRemover }: { mockup: unknown; somenteLeitura: boolean; onMontar: () => void; onRemover: () => void }) {
+  const m = lerMockup(mockup)
+  if (somenteLeitura) return m ? <BotaoVer3D mockup={m} /> : null
+  if (!m)
+    return (
+      <Button type="button" variant="outline" size="sm" onClick={onMontar}>
+        <Box /> Montar mockup 3D
+      </Button>
+    )
+  return (
+    <div className="bg-card flex flex-wrap items-center gap-2 rounded-lg border p-2">
+      <Box className="text-primary size-5 shrink-0" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">Mockup 3D pronto</p>
+        <p className="text-muted-foreground truncate text-xs">
+          {m.titulo}
+          {m.desc ? ` · ${m.desc}` : ''}
+        </p>
+      </div>
+      <Button type="button" variant="outline" size="sm" onClick={onMontar}>
+        Ajustar
+      </Button>
+      <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={onRemover}>
+        Tirar
+      </Button>
     </div>
   )
 }

@@ -12,6 +12,8 @@ export default defineConfig({
     // PWA: deixa o sistema instalável no celular e no PC
     VitePWA({
       registerType: 'autoUpdate',
+      // O provador 3D é uma página à parte (public/provador3d), não a tela do sistema
+      workbox: { navigateFallbackDenylist: [/^\/provador3d\//] },
       includeAssets: ['favicon.svg', 'favicon.ico', 'apple-touch-icon.png', 'brand/*.svg'],
       manifest: {
         name: "Art's Brindes — Gestão",
