@@ -36,7 +36,7 @@ export function Produtos() {
   return (
     <div className="space-y-5">
       <header className="flex items-center justify-between gap-3">
-        <h1 className="font-display text-2xl font-bold md:text-3xl">Produtos</h1>
+        <h1 className="titulo-pagina">Produtos</h1>
         <Button asChild>
           <Link to="/produtos/novo">
             <Plus /> Novo
@@ -62,7 +62,7 @@ export function Produtos() {
               onClick={() => setFiltro(valor)}
               className={cn(
                 'rounded-full border px-3 py-1 text-sm',
-                filtro === valor ? 'border-primary bg-primary/15 text-primary' : 'text-muted-foreground',
+                filtro === valor ? 'border-foreground bg-foreground text-background' : 'bg-card text-muted-foreground hover:text-foreground',
               )}
             >
               {texto}
@@ -114,7 +114,7 @@ function CartaoProduto({ p }: { p: Produto }) {
   const baixas = p.variacoes.filter((v) => v.ativo && v.estoque <= v.estoque_minimo && v.estoque_minimo > 0)
   return (
     <Link to={`/produtos/${p.id}`} className="block">
-      <Card className={cn('hover:border-primary/60 gap-3 transition-colors', !p.ativo && 'opacity-60')}>
+      <Card className={cn('hover:border-border-strong hover:shadow-ring gap-3 transition-all', !p.ativo && 'opacity-60')}>
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <p className="truncate font-semibold">{p.nome}</p>
@@ -142,7 +142,7 @@ function CartaoProduto({ p }: { p: Produto }) {
             <span className="text-destructive text-sm">Sem preço</span>
           ) : (
             p.faixas.map((f) => (
-              <span key={f.qtd_min} className="bg-secondary rounded-md px-2 py-1 text-xs">
+              <span key={f.qtd_min} className="bg-muted rounded-full px-2.5 py-1 text-xs">
                 <span className="text-muted-foreground">{rotulo(f)} un</span> <span className="font-semibold">{formatarBRL(f.preco)}</span>
               </span>
             ))

@@ -5,7 +5,16 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Art's Brindes — Gestão</title>
-    <meta name="theme-color" content="#141416" />
+    <meta name="theme-color" content="#ffffff" />
+    <script>
+      // aplica o tema antes de desenhar a tela (evita piscar claro/escuro)
+      try {
+        var t = localStorage.getItem('arts-tema')
+        var escuro = t === 'escuro' || (t !== 'claro' && matchMedia('(prefers-color-scheme: dark)').matches)
+        if (escuro) document.documentElement.classList.add('dark')
+        document.querySelector('meta[name="theme-color"]').setAttribute('content', escuro ? '#0a0a0a' : '#ffffff')
+      } catch (e) {}
+    </script>
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   </head>
   <body>

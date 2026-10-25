@@ -4,7 +4,7 @@ import type { ItemMenu } from '@/lib/menu'
 export function EmBreve({ item }: { item: ItemMenu }) {
   return (
     <div className="space-y-6">
-      <h1 className="font-display text-2xl font-bold md:text-3xl">{item.titulo}</h1>
+      <h1 className="titulo-pagina">{item.titulo}</h1>
       <div className="text-muted-foreground flex flex-col items-center gap-3 rounded-xl border border-dashed py-16 text-center">
         <Construction className="text-primary size-10" />
         <p>Em construção{item.etapa ? ` — etapa ${item.etapa}` : ''}.</p>
