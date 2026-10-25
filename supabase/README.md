@@ -11,6 +11,7 @@ Os scripts em `migrations/` são rodados **em ordem**, uma vez cada, no painel d
 | `0004_salvar_produto.sql` | `salvar_produto(jsonb)`: grava produto + faixas + cores numa operação só (tudo ou nada) |
 | `0005_clientes.sql` | `clientes` PF/PJ (CPF/CNPJ único, aceita CNPJ alfanumérico), endereço, cliente de confiança |
 | `0006_configuracoes.sql` | `configuracoes` (linha única): regra e percentual do sinal, validade, formas de pagamento, textos das condições, dados da loja |
+| `0007_orcamentos.sql` | `orcamentos` (ORC-0001, validade, desconto com motivo, frete, sinal auto/forçar/sem, token do link) + `orcamento_itens`; `orcamento_totais()` e view `orcamentos_lista` |
 
 ## Configuração de login (uma vez)
 
