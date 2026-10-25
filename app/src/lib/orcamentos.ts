@@ -33,6 +33,7 @@ export type Orcamento = {
   observacao: string | null
   aprovado_em?: string | null
   aprovado_por?: string | null
+  visualizado_em?: string | null
   itens: ItemOrcamento[]
 }
 
@@ -50,6 +51,9 @@ export type LinhaLista = {
   quantidade: number
   pede_sinal: boolean
   valor_sinal: number
+  visualizado_em: string | null
+  aprovado_em: string | null
+  aprovado_por: string | null
 }
 
 const num = (v: unknown) => (v == null ? null : Number(v))
@@ -72,7 +76,7 @@ export async function buscarOrcamento(id: string): Promise<Orcamento | null> {
   const { data, error } = await supabase
     .from('orcamentos')
     .select(
-      'id, numero, status, token, cliente_id, validade, prazo_entrega, desconto_tipo, desconto_valor, desconto_motivo, frete_valor, frete_repassado, sinal_modo, sinal_percentual, observacao, aprovado_em, aprovado_por, itens:orcamento_itens(produto_id, variacao_id, descricao, detalhe, quantidade, preco_unitario, adicional, item_do_cliente, mockup, ordem)',
+      'id, numero, status, token, cliente_id, validade, prazo_entrega, desconto_tipo, desconto_valor, desconto_motivo, frete_valor, frete_repassado, sinal_modo, sinal_percentual, observacao, aprovado_em, aprovado_por, visualizado_em, itens:orcamento_itens(produto_id, variacao_id, descricao, detalhe, quantidade, preco_unitario, adicional, item_do_cliente, mockup, ordem)',
     )
     .eq('id', id)
     .maybeSingle()

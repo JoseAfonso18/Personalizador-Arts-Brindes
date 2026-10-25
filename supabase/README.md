@@ -13,6 +13,7 @@ Os scripts em `migrations/` são rodados **em ordem**, uma vez cada, no painel d
 | `0006_configuracoes.sql` | `configuracoes` (linha única): regra e percentual do sinal, validade, formas de pagamento, textos das condições, dados da loja |
 | `0007_orcamentos.sql` | `orcamentos` (ORC-0001, validade, desconto com motivo, frete, sinal auto/forçar/sem, token do link) + `orcamento_itens`; `orcamento_totais()` e view `orcamentos_lista` |
 | `0008_salvar_orcamento.sql` | `salvar_orcamento` (tudo ou nada), `renovar_orcamento`, `duplicar_orcamento`, `preco_orcamento` (faixa pela soma das cores) |
+| `0009_link_publico.sql` | link público `/o/<token>`: `orcamento_publico`, `aprovar_orcamento_publico`, `registrar_visualizacao`; coluna `visualizado_em` |
 
 ## Configuração de login (uma vez)
 
@@ -35,3 +36,8 @@ cd app && npm test
 ```
 
 Testes em `app/test/`.
+
+## Avisos esperados do Security Advisor
+
+- **Public/Signed-in can execute SECURITY DEFINER function** em `orcamento_publico`, `aprovar_orcamento_publico` e `registrar_visualizacao`: é intencional — é o link que o cliente abre sem login. As funções só devolvem/alteram o orçamento cujo token (64 caracteres aleatórios) foi informado, não expõem CPF/CNPJ/telefone do cliente e só aprovam orçamento em aberto e dentro da validade (testado em `app/test/link_publico.test.ts`).
+- **Leaked Password Protection**: recurso do plano pago.

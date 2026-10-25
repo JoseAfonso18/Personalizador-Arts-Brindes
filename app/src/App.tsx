@@ -10,6 +10,7 @@ import { Clientes } from '@/pages/Clientes'
 import { EmBreve } from '@/pages/EmBreve'
 import { Login } from '@/pages/Login'
 import { OrcamentoForm } from '@/pages/OrcamentoForm'
+import { OrcamentoPublico } from '@/pages/OrcamentoPublico'
 import { Orcamentos } from '@/pages/Orcamentos'
 import { Painel } from '@/pages/Painel'
 import { ProdutoForm } from '@/pages/ProdutoForm'
@@ -29,6 +30,7 @@ function RotaProtegida() {
 
 const router = createBrowserRouter([
   { path: '/login', element: <Login /> },
+  { path: '/o/:token', element: <OrcamentoPublico /> },
   {
     element: <RotaProtegida />,
     children: [

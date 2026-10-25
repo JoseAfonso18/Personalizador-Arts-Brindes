@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
-import { ArrowLeft, Ban, CheckCircle2, Copy, Loader2, Plus, RefreshCw, RotateCcw, Send, Trash2, UserPlus, Wand2 } from 'lucide-react'
+import { ArrowLeft, Ban, CheckCircle2, Copy, ExternalLink, Eye, Link2, Loader2, MessageCircle, Plus, RefreshCw, RotateCcw, Send, Trash2, UserPlus, Wand2 } from 'lucide-react'
 import { Seletor, type OpcaoSeletor } from '@/components/Seletor'
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -27,6 +27,7 @@ import {
   type StatusOrcamento,
 } from '@/lib/orcamentos'
 import { listarProdutos, type Produto } from '@/lib/produtos'
+import { linkOrcamento, linkWhatsApp } from '@/lib/publico'
 import { cn } from '@/lib/utils'
 
 type ItemCampo = {
@@ -74,6 +75,9 @@ export function OrcamentoForm() {
   const [numero, setNumero] = useState<number | null>(null)
   const [status, setStatus] = useState<StatusOrcamento>('rascunho')
   const [aprovadoPor, setAprovadoPor] = useState<string | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+  const [visualizado, setVisualizado] = useState<string | null>(null)
+  const [copiado, setCopiado] = useState(false)
   const [clienteId, setClienteId] = useState<string | null>(null)
   const [itens, setItens] = useState<ItemCampo[]>([itemVazio()])
   const [descTipo, setDescTipo] = useState<'valor' | 'percentual'>('valor')
@@ -118,6 +122,8 @@ export function OrcamentoForm() {
     setNumero(o.numero ?? null)
     setStatus(o.status ?? 'rascunho')
     setAprovadoPor(o.aprovado_por ?? null)
+    setToken(o.token ?? null)
+    setVisualizado(o.visualizado_em ?? null)
     setClienteId(o.cliente_id)
     setItens(
       o.itens.map((i) => ({
@@ -350,6 +356,29 @@ export function OrcamentoForm() {
     )
 
   const s = SITUACOES[situacao]
+  const cliente = clientes.find((c) => c.id === clienteId)
+  const link = token ? linkOrcamento(token) : ''
+  const nomeCliente = cliente ? (cliente.tipo === 'pj' && cliente.nome_fantasia ? cliente.nome_fantasia : cliente.nome.split(' ')[0]) : ''
+  const mensagemWhats = numero
+    ? `Olá${nomeCliente ? ` ${nomeCliente}` : ''}! Segue o orçamento ${numeroOrcamento(numero)} da ${cfg?.loja_nome ?? "Art's Brindes"}: ${formatarBRL(totais.total)}.${totais.pede_sinal ? ` Entrada de ${formatarBRL(totais.valor_sinal)}.` : ''}\n\nVeja os detalhes e aprove por aqui: ${link}`
+    : ''
+
+  async function marcarEnviado() {
+    if (id && status === 'rascunho') {
+      await mudarStatus(id, 'enviado')
+      setStatus('enviado')
+    }
+  }
+  async function copiarLink() {
+    try {
+      await navigator.clipboard.writeText(link)
+    } catch {
+      window.prompt('Copie o link:', link)
+    }
+    setCopiado(true)
+    setTimeout(() => setCopiado(false), 2000)
+    await marcarEnviado()
+  }
 
   return (
     <form onSubmit={salvar} className="mx-auto max-w-6xl space-y-5 pb-40 md:pb-0">
@@ -670,6 +699,39 @@ export function OrcamentoForm() {
             )}
             {textoCondicoes && <p className="text-muted-foreground border-t pt-3 text-xs leading-relaxed">{textoCondicoes}</p>}
           </Card>
+
+          {id && token && situacao !== 'recusado' && (
+            <Card className="gap-3">
+              <CardTitle className="flex items-center gap-2">
+                <Link2 className="text-primary size-4" /> Enviar para o cliente
+              </CardTitle>
+              {situacao === 'expirado' ? (
+                <p className="text-muted-foreground text-sm">Renove o orçamento antes de enviar.</p>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <Button type="button" variant="outline" onClick={copiarLink}>
+                      {copiado ? <CheckCircle2 className="text-success" /> : <Copy />} {copiado ? 'Copiado' : 'Copiar link'}
+                    </Button>
+                    <Button type="button" variant="outline" asChild>
+                      <a href={linkWhatsApp(cliente?.celular || cliente?.telefone, mensagemWhats)} target="_blank" rel="noreferrer" onClick={() => void marcarEnviado()}>
+                        <MessageCircle /> WhatsApp
+                      </a>
+                    </Button>
+                  </div>
+                  <a href={link} target="_blank" rel="noreferrer" className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-xs">
+                    <ExternalLink className="size-3" /> Ver como o cliente vê
+                  </a>
+                  {!cliente?.celular && !cliente?.telefone && <p className="text-muted-foreground text-xs">Cliente sem celular cadastrado: o WhatsApp abre para você escolher o contato.</p>}
+                </>
+              )}
+              {visualizado && (
+                <p className="text-muted-foreground flex items-center gap-1 text-xs">
+                  <Eye className="size-3" /> Cliente abriu o link em {formatarData(visualizado)}
+                </p>
+              )}
+            </Card>
+          )}
 
           {tentou && erros.length > 0 && (
             <ul className="text-destructive space-y-1 text-sm">
